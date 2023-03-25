@@ -1,5 +1,5 @@
 # Epsilon-NFA
-* Java implementation of epsilon nondeterministic finite automaton *
+# Java implementation of epsilon nondeterministic finite automaton
 
 The input to the automaton simulator is a text record of its definition and the input string,
 and the output is a text record of the sets of states the automaton was in for each loaded character of the input string
@@ -11,7 +11,7 @@ When printing the simulator output, it is necessary to preserve the lexicographi
 In the definition of the epsilon-transition, the alphabet symbol will be replaced by the $ sign
 (the ε symbol is replaced by the $ symbol)
 
-An empty set of states is indicated by the symbol #.
+# An empty set of states is indicated by the symbol #.
 
 Format for recording input string and ε-NKA definitions are:
 * Input strings separated by |. The symbols of each individual string are separated by a comma.
