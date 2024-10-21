@@ -3,29 +3,25 @@
 import React, { useState, useEffect } from 'react';
 import './AdminGame.css';
 
-const AdminGame = ({ adminData }) => {
+const AdminGame = ({ adminData, players }) => {
   const [gameCode, setGameCode] = useState('');
-  const [players, setPlayers] = useState([]);
-  // const [selectedLesson, setSelectedLesson] = useState(''); // Ova linija uzrokuje warning
-  // const lessons = [
-  //   "Priroda i društvo",
-  //   "Matematika",
-  //   "Programiranje",
-  //   "Povijest",
-  //   "Geografija",
-  //   "Likovni",
-  //   "Fizika"
-  // ];
-
-  // const addPlayer = (playerName) => { // Ova linija uzrokuje warning
-  //   setPlayers((prevPlayers) => [...prevPlayers, playerName]);
-  // };
+  const [playerList, setPlayerList] = useState([]);
 
   useEffect(() => {
-    // Generiranje slučajnog koda igre kada se komponenta učita
     const generatedCode = Math.random().toString(36).substring(2, 8).toUpperCase();
     setGameCode(generatedCode);
   }, []);
+
+  useEffect(() => {
+    // Kada se adminData promijeni, resetiraj listu igrača
+    if (adminData) {
+      setPlayerList([]);
+    }
+  }, [adminData]);
+
+  const addPlayer = (playerName) => {
+    setPlayerList((prevPlayers) => [...prevPlayers, playerName]);
+  };
 
   return (
     <div className="admin-game">
@@ -36,8 +32,8 @@ const AdminGame = ({ adminData }) => {
       <div className="player-list">
         <h2>Igrači:</h2>
         <ul>
-          {players.length > 0 ? (
-            players.map((player, index) => (
+          {playerList.length > 0 ? (
+            playerList.map((player, index) => (
               <li key={index}>{player}</li>
             ))
           ) : (
@@ -45,17 +41,7 @@ const AdminGame = ({ adminData }) => {
           )}
         </ul>
       </div>
-      <div className="lessons-menu">
-        <h2>Odabir predmeta:</h2>
-        <select onChange={(e) => { /* setSelectedLesson(e.target.value) */ }}>
-          <option value="">Odaberite lekciju</option>
-          {/* {lessons.map((lesson, index) => (
-            <option key={index} value={lesson}>{lesson}</option>
-          ))} */}
-        </select>
-      </div>
-      {/* Ovdje bi dodali logiku za započinjanje igre */}
-      <button onClick={() => {/* logika za započinjanje igre */}}>Započni igru</button>
+      {/* Ovdje će se dodati logika za dodavanje igrača */}
     </div>
   );
 };
