@@ -17,3 +17,17 @@ KAKO POKRENUTI React
 (1) otvorite terminal
 (2) cd edu-bingo
 (3) npm start
+
+
+BITNE KOMANDE
+rm -rf node_modules        # Briše folder sa zavisnostima
+rm package-lock.json       # Briše lock file koji sadrži verzije zavisnosti
+npm install                # Ponovo instalira sve zavisnosti
+
+
+Kriptografske funkcije:
+MacOS 
+export NODE_OPTIONS=--openssl-legacy-provider
+
+Windows
+set NODE_OPTIONS=--openssl-legacy-provider
