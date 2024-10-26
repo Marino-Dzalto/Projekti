@@ -23,8 +23,8 @@ EduBingo je edukativna web aplikacija koja omogućuje igru binga s prilagodljivi
 ## Tehnologije
 
 - **Frontend:** React.js
-- **Backend:** Node.js (planirano, ali trenutno nije implementirano)
-- **Baza podataka:** (planirano, ali trenutno nije implementirano)
+- **Backend:** Flask (planirano, ali trenutno nije implementirano)
+- **Baza podataka:** Supabase
 
 **Korištenje**
 

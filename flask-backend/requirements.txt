@@ -1,4 +1,6 @@
 flask
+flask-cors
+flask-socketio
+flask-sqlalchemy
 python-dotenv
 psycopg2
-flask-cors
