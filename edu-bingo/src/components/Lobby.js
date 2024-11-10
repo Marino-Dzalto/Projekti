@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import './Lobby.css'; // Uključite CSS datoteku za stilizaciju
 
-const Lobby = ({ gameCode, adminName, players }) => {
+const Lobby = ({ gameCode, adminName, players, isGameLocked }) => {
   const [timer, setTimer] = useState(0);
   const [chatMessage, setChatMessage] = useState('');
   const [chat, setChat] = useState([]);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [updatedPlayers, setUpdatedPlayers] = useState(players);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -15,6 +16,23 @@ const Lobby = ({ gameCode, adminName, players }) => {
     
     return () => clearInterval(interval);
   }, []);
+
+  // Funkcija kako bi se igrači dohvatili periodično
+  useEffect(() => {
+    const fetchPlayers = async () => {
+      try {
+        const response = await fetch(`/api/players/${gameCode}`);
+        const result = await response.json();
+        setUpdatedPlayers(result.players); // Update liste igrača sa podatcim sa servera
+      } catch (error) {
+        console.error('Error fetching players:', error);
+      }
+    };
+
+    // Poll svakih par sekundi da možemo ažurno updateat listu
+    const interval = setInterval(fetchPlayers, 5000);
+    return () => clearInterval(interval);
+  }, [gameCode]);
 
   const handleSendChat = (e) => {
     e.preventDefault();
@@ -36,14 +54,15 @@ const Lobby = ({ gameCode, adminName, players }) => {
         <h2>Šifra igre: {gameCode}</h2>
         <h3>Admin: {adminName}</h3>
         <div className="timer">Vrijeme u lobby-u: {timer} sekundi</div>
+        {isGameLocked && <p className="locked-message">Igra je zaključana. Nema novih igrača.</p>}
       </div>
       <div className="main-content">
         <div className="player-list">
           <h3>Igrači:</h3>
           <ul>
-            {players.length > 0 ? (
-              players.map((player, index) => (
-                <li key={index}>{player}</li>
+            {updatedPlayers.length > 0 ? (
+              updatedPlayers.map((player, index) => (
+                <li key={index}>{player.name || player}</li>
               ))
             ) : (
               <li>Nema igrača u igri.</li>
