@@ -1,9 +1,10 @@
 // src/App.js
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Home from './components/Home';
 import AdminGame from './components/AdminGame';
 import Lobby from './components/Lobby';
+import GameBoard from './components/GameBoard';
 import './App.css';
 
 const App = () => {
@@ -11,6 +12,7 @@ const App = () => {
   const [gameCode, setGameCode] = useState(null);
   const [players, setPlayers] = useState([]);  // gdje ćemo storeat igrače
   const [isGameLocked, setIsGameLocked] = useState(false); // je li soba zaključana/otključana
+  const [isGameStarted, setIsGameStarted] = useState(false); //je li igra započela ili smo još u lobbyu
 
   const handleCreateGame = async (data) => {
     try {
@@ -44,20 +46,44 @@ const App = () => {
 
   const handleLeaveLobby = () => {
     setGameCode(null);
+    setIsGameStarted(false);
   };
 
   const handleStartGame = async () => {
     try {
       await fetch(`/api/lock-room/${gameCode}`, { method: 'POST' });
       setIsGameLocked(true); // lockamo sobu, igra kreće, ne može se nitko više pridružiti
+      setIsGameStarted(true);
     } catch (error) {
       console.error('Error locking the game:', error);
     }
   };
 
+  useEffect(() => {
+    // Da bismo testirali pojedinu stranicu samo uncommentaj pojedini dio
+    // AdminGame
+    //setAdminData({ roomId: '123', roomName: 'Test Room' });
+
+    // Lobby
+    //setGameCode('123');
+    //setPlayers([{ name: 'Player1' }, { name: 'Player2' }]);
+
+    // GameBoard
+    //setIsGameStarted(true);
+    //setPlayers([{ name: 'Player1' }, { name: 'Player2' }]);
+    //setGameCode('123');
+
+    //Home
+    //samo zakomentiraj sve
+  }, []);
+
   return (
     <div className="App">
-      {gameCode ? (
+      {isGameStarted ? (
+        // Ako je igra krenula idemo na GameBoard
+        <GameBoard players={players} gameCode={gameCode} />
+      ) : gameCode ? (
+        // Ako je izgeneriran code, ali igra još nije krenla onda smo još u Lobbyu
         <Lobby
           gameCode={gameCode}
           players={players}
@@ -65,11 +91,13 @@ const App = () => {
           isGameLocked={isGameLocked}
         />
       ) : adminData ? (
+        // Ako adminData imamo, a Game code jos ne onda mi pokaži AdminGame(teacher dio)
         <AdminGame
           adminData={adminData}
           onStartGame={handleStartGame}
         />
       ) : (
+        // Pokaži index po defaultu
         <Home onCreateGame={handleCreateGame} onJoinGame={handleJoinGame} />
       )}
     </div>

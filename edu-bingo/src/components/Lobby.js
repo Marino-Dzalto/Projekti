@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import './Lobby.css'; // Uključite CSS datoteku za stilizaciju
+import '../styles/Lobby.css'; // Uključite CSS datoteku za stilizaciju
 
 const Lobby = ({ gameCode, adminName, players, isGameLocked }) => {
   const [timer, setTimer] = useState(0);
