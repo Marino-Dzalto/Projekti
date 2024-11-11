@@ -37,7 +37,7 @@ const AdminGame = ({ adminData, players }) => {
       try {
         const response = await fetch(`/api/players/${gameCode}`);
         const result = await response.json();
-        setPlayerList(result.players);
+        setPlayerList(result);
       } catch (error) {
         console.error('Error fetching players:', error);
       }

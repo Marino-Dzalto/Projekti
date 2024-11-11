@@ -1,6 +1,7 @@
 import os
+from random import randrange
 from dotenv import load_dotenv
-from flask import Flask, request
+from flask import Flask, request, jsonify
 from flask_cors import CORS
 from db_models import (
     db,
@@ -25,15 +26,12 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db.init_app(app)
 
 
-@app.post("/create-game")
+@app.post("/api/create-room")
 def create_game():
     data = request.get_json()
-    name = data["adminName"]
-    email = data["adminSurname"]
+    ...
 
-    teacher = Teacher.query.filter_by(name=name, email=email).first()
 
-    if teacher:
-        return {"message": "Teacher in database"}, 200
-    else:
-        return {"message": "Teacher not in database"}, 404
+@app.get("/api/players/<string:game_id>")
+def get_players(game_id):
+    return jsonify([{ 'name': 'Player' + str(randrange(10)) }, { 'name': 'Player' + str(randrange(10)) }])

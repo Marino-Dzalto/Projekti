@@ -23,7 +23,7 @@ const Lobby = ({ gameCode, adminName, players, isGameLocked }) => {
       try {
         const response = await fetch(`/api/players/${gameCode}`);
         const result = await response.json();
-        setUpdatedPlayers(result.players); // Update liste igrača sa podatcim sa servera
+        setUpdatedPlayers(result); // Update liste igrača sa podatcim sa servera
       } catch (error) {
         console.error('Error fetching players:', error);
       }

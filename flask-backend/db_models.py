@@ -10,6 +10,7 @@ from sqlalchemy import (
     Integer,
     String,
     text,
+    Boolean
 )
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import UUID
@@ -98,6 +99,7 @@ class Game(db.Model):
     game_code = Column(String(100), nullable=False, unique=True)
     start_time = Column(DateTime, nullable=False)
     end_time = Column(DateTime, nullable=False)
+    is_locked = Column(Boolean, nullable=False)
 
     teacher = relationship("Teacher")
 
@@ -112,6 +114,7 @@ class Student(db.Model):
     username = Column(String(100), nullable=False, unique=True)
     start_time = Column(DateTime, nullable=False)
     end_time = Column(DateTime, nullable=False)
+    is_active = Column(Boolean, nullable=False)
 
     game = relationship("Game")
 
