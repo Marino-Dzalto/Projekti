@@ -1,0 +1,94 @@
+/* src/styles/AdminGame.css */
+
+.admin-game {
+  background-color: #f3e8ff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  height: 100vh;
+  padding: 20px;
+}
+
+h1 {
+  margin-bottom: 20px;
+  font-family: 'Comic Sans MS', 'Comic Sans', cursive;
+  font-size: 2em;
+  color: #6a0dad;
+}
+
+.game-setup label {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  font-weight: bold;
+  color: #5a5a5a;
+  margin: 10px 0;
+  font-family: 'Comic Sans MS', 'Comic Sans', cursive;
+}
+
+select {
+  padding: 10px;
+  margin-top: 5px;
+  font-size: 16px;
+  border-radius: 12px;
+  background-color: #d9b3ff;
+  color: #4a148c;
+  border: 2px solid #b39ddb;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'Comic Sans MS', 'Comic Sans', cursive;
+}
+
+select:hover {
+  background-color: #b39ddb;
+}
+
+select:focus {
+  outline: none;
+  box-shadow: 0 0 10px rgba(122, 73, 220, 0.6);
+  border-color: #8e44ad;
+  transform: scale(1.05);
+}
+
+button {
+  margin-top: 20px;
+  padding: 12px 24px;
+  background-color: #a569bd;
+  color: white;
+  border: none;
+  cursor: pointer;
+  border-radius: 12px;
+  font-size: 18px;
+  font-weight: bold;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+  transition: transform 0.1s ease, background-color 0.3s;
+}
+
+button:hover {
+  background-color: #8e44ad;
+  transform: scale(1.1);
+}
+
+button:active {
+  transform: scale(0.95);
+}
+
+button:focus {
+  outline: 2px dashed #d2b4ff;
+}
+
+.player-list {
+  border: 1px solid #b39ddb;
+  padding: 10px;
+  border-radius: 8px;
+  width: 80%;
+  background-color: #f0e6ff;
+}
+
+.lessons-menu select {
+  margin: 5px 0;
+  padding: 12px;
+  width: 80%;
+  font-family: 'Comic Sans MS', 'Comic Sans', cursive;
+}
