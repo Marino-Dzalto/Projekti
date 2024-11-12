@@ -14,7 +14,7 @@ const Home = ({ onCreateGame, onJoinGame }) => {
   const handleStartGame = () => {
     if (adminName && adminSurname && numPlayers) {
       const newGameCode = generateGameCode();
-      onCreateGame({ adminName, adminSurname, numPlayers, gameCode: newGameCode });
+      onCreateGame({ adminName, adminSurname, numPlayers, gameCode: newGameCode, topic: "testing" });
       setErrorMessage('');
     }
   };

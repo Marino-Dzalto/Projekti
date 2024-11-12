@@ -22,8 +22,12 @@ const App = () => {
         body: JSON.stringify(data),
       });
       const result = await response.json();
-      setAdminData(result); // room podaci potrebni za sobu
-      setIsGameLocked(false); // inicijalno je soba otvorena...
+      if (response.ok) {
+        setAdminData(result); // room podaci potrebni za sobu
+        setIsGameLocked(false); // inicijalno je soba otvorena...
+      } else {
+        alert(result.message);
+      }
     } catch (error) {
       console.error('Error creating game:', error);
     }
