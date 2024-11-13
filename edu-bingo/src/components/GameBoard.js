@@ -8,36 +8,34 @@ const GameBoard = () => {
   const [answer, setAnswer] = useState('');
   const [score, setScore] = useState(0);
 
+  // Fetch pitanja s backenda
   useEffect(() => {
-    const initialCards = Array.from({ length: 9 }, (_, index) => ({
-      id: index,
-      number: Math.floor(Math.random() * 90) + 1,
-      task: getTask(), // Mock task
-      flipped: false,
-      points: getTaskPoints() // Mock task tezina
-    }));
-    setCards(initialCards);
+    const fetchTasks = async () => {
+      try {
+        const response = await fetch('/api/tasks'); //namjestit ak je potrebno
+        const data = await response.json();
+
+        const initialCards = Array.from({ length: 9 }, (_, index) => ({
+          id: index,
+          number: Math.floor(Math.random() * 90) + 1,
+          task: data[index] || { question: "Placeholder Question", answer: "", type: "text" },
+          flipped: false,
+          points: data[index]?.difficulty || 1
+        }));
+        console.log('Cards:', initialCards);
+        setCards(initialCards);
+      } catch (error) {
+        console.error('Error fetching tasks:', error);
+      }
+    };
+
+    fetchTasks();
   }, []);
 
   const generateRandomNumber = () => {
     setRandomNumber(Math.floor(Math.random() * 90) + 1);
   };
 
-  // Mock task generator
-  const getTask = () => {
-    const tasks = [
-      { type: 'text', question: 'What is the capital of France?', answer: 'Paris' },
-      { type: 'number', question: 'What is 5 + 3?', answer: '8' },
-      { type: 'multiple', question: 'Which one is a mammal?', options: ['Shark', 'Elephant', 'Eagle'], answer: 'Elephant' }
-    ];
-    return tasks[Math.floor(Math.random() * tasks.length)];
-  };
-
-  // Mock task points
-  const getTaskPoints = () => {
-    const difficulties = [1, 2, 3]; // Easy, medium, hard
-    return difficulties[Math.floor(Math.random() * difficulties.length)];
-  };
 
   // flipamo kartu ako task bude pogođen
   const handleFlipCard = (index) => {

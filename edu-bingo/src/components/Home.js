@@ -3,32 +3,33 @@
 import React, { useState } from 'react';
 
 const Home = ({ onCreateGame, onJoinGame }) => {
-  const [adminName, setAdminName] = useState('');
-  const [adminSurname, setAdminSurname] = useState('');
+  const [adminUsername, setAdminUsername] = useState('');
+  const [adminPass, setAdminPass] = useState('');
   const [numPlayers, setNumPlayers] = useState('');
   const [gameCode, setGameCode] = useState('');
   const [playerName, setPlayerName] = useState('');
-  const [playerSurname, setPlayerSurname] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
 
   const handleStartGame = () => {
-    if (adminName && adminSurname && numPlayers) {
-      const newGameCode = generateGameCode();
-      onCreateGame({ adminName, adminSurname, numPlayers, gameCode: newGameCode });
-      setErrorMessage('');
+    if (!adminUsername || !adminPass || !numPlayers) {
+      setErrorMessage("Molimo ispunite sva polja za kreiranje igre.");
+      return;
     }
+    const newGameCode = generateGameCode();
+    onCreateGame({ adminUsername, adminPass, numPlayers, gameCode: newGameCode })
+      .then(() => setErrorMessage(''))
+      .catch(() => setErrorMessage("Greška pri kreiranju igre."));
   };
 
   const handleJoinGame = () => {
-    if (gameCode && playerName && playerSurname) {
-      const exists = onJoinGame({ gameCode, playerName: `${playerName} ${playerSurname}` });
+    if (gameCode && playerName) {
+      const exists = onJoinGame({ gameCode, playerName: `${playerName}` });
       if (exists) {
         setErrorMessage('');
       } else {
         setErrorMessage("Šifra igre je neispravna.");
       }
       setPlayerName('');
-      setPlayerSurname('');
     } else {
       setErrorMessage("Unesite šifru igre i vaše ime i prezime.");
     }
@@ -46,15 +47,15 @@ const Home = ({ onCreateGame, onJoinGame }) => {
         <h2>Kreiraj igru</h2>
         <input 
           type="text" 
-          placeholder="Ime admina" 
-          value={adminName} 
-          onChange={(e) => setAdminName(e.target.value)} 
+          placeholder="Username admina" 
+          value={adminUsername} 
+          onChange={(e) => setAdminUsername(e.target.value)} 
         />
         <input 
           type="text" 
-          placeholder="Prezime admina" 
-          value={adminSurname} 
-          onChange={(e) => setAdminSurname(e.target.value)} 
+          placeholder="Password admina" 
+          value={adminPass} 
+          onChange={(e) => setAdminPass(e.target.value)} 
         />
         <input 
           type="number" 
@@ -77,12 +78,6 @@ const Home = ({ onCreateGame, onJoinGame }) => {
           placeholder="Ime igrača" 
           value={playerName} 
           onChange={(e) => setPlayerName(e.target.value)} 
-        />
-        <input 
-          type="text" 
-          placeholder="Prezime igrača" 
-          value={playerSurname} 
-          onChange={(e) => setPlayerSurname(e.target.value)} 
         />
         <button onClick={handleJoinGame}>Start</button>
       </div>
