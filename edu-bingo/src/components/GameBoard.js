@@ -12,26 +12,44 @@ const GameBoard = () => {
   useEffect(() => {
     const fetchTasks = async () => {
       try {
-        const response = await fetch('/api/tasks'); //namjestit ak je potrebno
-        const data = await response.json();
+        const response = await fetch('/api/tasks');
+        if (!response.ok) throw new Error("Failed to fetch tasks");
 
+        const data = await response.json();
+        
         const initialCards = Array.from({ length: 9 }, (_, index) => ({
           id: index,
           number: Math.floor(Math.random() * 90) + 1,
-          task: data[index] || { question: "Placeholder Question", answer: "", type: "text" },
+          task: data[index],
           flipped: false,
           points: data[index]?.difficulty || 1
         }));
+        
         console.log('Cards:', initialCards);
         setCards(initialCards);
+
       } catch (error) {
         console.error('Error fetching tasks:', error);
+
+        // defaulte data dok se backend ne izgradi
+        const defaultCards = Array.from({ length: 9 }, (_, index) => ({
+          id: index,
+          number: Math.floor(Math.random() * 90) + 1,
+          task: { 
+            question: "Placeholder Question", 
+            answer: "Placeholder Answer", 
+            type: "text" 
+          },
+          flipped: false,
+          points: 1
+        }));
+
+        setCards(defaultCards);
       }
     };
 
     fetchTasks();
   }, []);
-
   const generateRandomNumber = () => {
     setRandomNumber(Math.floor(Math.random() * 90) + 1);
   };
@@ -68,6 +86,11 @@ const GameBoard = () => {
     setSelectedCardIndex(null);
   };
 
+  const closeModal = () => {
+    setSelectedCardIndex(null);
+    setAnswer('');
+  };
+
   return (
     <div className="game-board">
       <div className="game-info">
@@ -83,47 +106,51 @@ const GameBoard = () => {
             className={`card ${card.flipped ? 'flipped' : ''}`}
             onClick={() => handleFlipCard(index)}
           >
-            {card.flipped ? (
-              <div className="card-content">
-                <p>{card.task.question}</p>
-                {!card.completed && (
-                  <>
-                    {card.task.type === 'text' && (
-                      <input
-                        type="text"
-                        value={answer}
-                        onChange={(e) => setAnswer(e.target.value)}
-                      />
-                    )}
-                    {card.task.type === 'number' && (
-                      <input
-                        type="number"
-                        value={answer}
-                        onChange={(e) => setAnswer(e.target.value)}
-                      />
-                    )}
-                    {card.task.type === 'multiple' && (
-                      <select
-                        value={answer}
-                        onChange={(e) => setAnswer(e.target.value)}
-                      >
-                        <option value="">Izaberi odgovor</option>
-                        {card.task.options.map((opt, i) => (
-                          <option key={i} value={opt}>{opt}</option>
-                        ))}
-                      </select>
-                    )}
-                    <button onClick={handleSubmitAnswer}>Potvrdi odgovor</button>
-                  </>
-                )}
-                {card.completed && <p>Rješena kartica!</p>}
-              </div>
-            ) : (
-              <p>Redni broj: {card.number}</p>
-            )}
+            <p>Redni broj: {card.number}</p>
           </div>
         ))}
       </div>
+
+      {/* Modal za otvaranje prozora pitanja */}
+      {selectedCardIndex !== null && (
+        <div className="modal-overlay active">
+          <div className="modal-content">
+            <span className="close-button" onClick={closeModal}>&times;</span>
+            <p>{cards[selectedCardIndex].task.question}</p>
+            {!cards[selectedCardIndex].completed && (
+              <>
+                {cards[selectedCardIndex].task.type === 'text' && (
+                  <input
+                    type="text"
+                    value={answer}
+                    onChange={(e) => setAnswer(e.target.value)}
+                  />
+                )}
+                {cards[selectedCardIndex].task.type === 'number' && (
+                  <input
+                    type="number"
+                    value={answer}
+                    onChange={(e) => setAnswer(e.target.value)}
+                  />
+                )}
+                {cards[selectedCardIndex].task.type === 'multiple' && (
+                  <select
+                    value={answer}
+                    onChange={(e) => setAnswer(e.target.value)}
+                  >
+                    <option value="">Izaberi odgovor</option>
+                    {cards[selectedCardIndex].task.options.map((opt, i) => (
+                      <option key={i} value={opt}>{opt}</option>
+                    ))}
+                  </select>
+                )}
+                <button onClick={handleSubmitAnswer}>Potvrdi odgovor</button>
+              </>
+            )}
+            {cards[selectedCardIndex].completed && <p>Rješena kartica!</p>}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
