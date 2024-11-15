@@ -7,29 +7,56 @@ const AdminGame = ({ adminData, players }) => {
   const [gameCode, setGameCode] = useState('');
   const [playerList, setPlayerList] = useState([]);
   const [isGameLocked, setIsGameLocked] = useState(false);
-  const [subject, setSubject] = useState('');
-  const [topic, setTopic] = useState('');
-  const [availableTopics, setAvailableTopics] = useState([]);
+  const [subjects, setSubjects] = useState([]);// predmeti s backenda
+  const [selectedSubject, setSelectedSubject] = useState('');// trenutacni predmet
+  const [topics, setTopics] = useState([]);// teme s backenda
+  const [selectedTopic, setSelectedTopic] = useState('');//trenutacna tema
 
-  // Definicija predmeta i tema
-  const subjects = ['Matematika', 'Hrvatski', 'Priroda', 'Engleski'];
-  const topics = {
-    Matematika: ['Brojevi do 100', 'Zbrajanje/oduzimanje', 'Množenje/dijeljenje', 'Zadaci s riječima'],
-    Priroda: ['Razvrstavanje otpada', 'primjer2', 'primjer3'],
-    Hrvatski: ['primjer1', 'primjer2', 'primjer3'],
-    Engleski: ['primjer1', 'primjer2', 'primjer3']
-  };
 
   useEffect(() => {
     const generatedCode = Math.random().toString(36).substring(2, 8).toUpperCase();
     setGameCode(generatedCode);
   }, []);
 
-  // Update tema i predmeta
+  // Fetchamo subjects iz backenda
   useEffect(() => {
-    setAvailableTopics(subject ? topics[subject] : []);
-    setTopic(''); // kad se promjeni predmet resetaj temu
-  }, [subject, topics]);
+    const fetchSubjects = async () => {
+      try {
+        const response = await fetch('/api/subjects');  // treba namjestit enrpoin
+        if (response.ok) {
+          const data = await response.json();
+          setSubjects(data.subjects);
+        } else {
+          console.error('Failed to fetch subjects');
+        }
+      } catch (error) {
+        console.error('Error fetching subjects:', error);
+      }
+    };
+    fetchSubjects();
+  }, []);
+
+  useEffect(() => {
+    if (!selectedSubject) {
+      setTopics([]); // ako predmet nije izabran brisemo i teme
+      return;
+    }
+
+    const fetchTopics = async () => {
+      try {
+        const response = await fetch(`/api/topics?subject=${selectedSubject}`); // Treba namjestit endpoint
+        if (response.ok) {
+          const data = await response.json();
+          setTopics(data.topics);
+        } else {
+          console.error('Failed to fetch topics');
+        }
+      } catch (error) {
+        console.error('Error fetching topics:', error);
+      }
+    };
+    fetchTopics();
+  }, [selectedSubject]);
 
   useEffect(() => {
     // Fetchamo igrače kakoo bi mogli popunit listu
@@ -49,7 +76,6 @@ const AdminGame = ({ adminData, players }) => {
 
   const handleLockGame = async () => {
     try {
-      // Sendamo request da zatvorimo sobu
       await fetch(`/api/lock-room/${gameCode}`, { method: 'POST' });
       setIsGameLocked(true);
     } catch (error) {
@@ -59,7 +85,7 @@ const AdminGame = ({ adminData, players }) => {
 
    // Handle game creation nakon sta izaberemo temu i predmet
    const handleCreateGame = async () => {
-    if (!subject || !topic) {
+    if (!selectedSubject || !selectedTopic) {
       alert('Please select both a subject and a topic.');
       return;
     }
@@ -70,7 +96,7 @@ const AdminGame = ({ adminData, players }) => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ gameCode, subject, topic })
+        body: JSON.stringify({ gameCode, subject: selectedSubject, topic: selectedTopic })
       });
 
       if (response.ok) {
@@ -89,21 +115,27 @@ const AdminGame = ({ adminData, players }) => {
       <div className="game-setup">
         <label>
           Predmet:
-          <select value={subject} onChange={(e) => setSubject(e.target.value)}>
+          <select value={selectedSubject} onChange={(e) => setSelectedSubject(e.target.value)}>
             <option value="">Izaberite predmet</option>
             {subjects.map((subj, index) => (
-              <option key={index} value={subj}>{subj}</option>
+              <option key={index} value={subj.name}>{subj.name}</option>
             ))}
           </select>
         </label>
 
         <label>
           Tema:
-          <select value={topic} onChange={(e) => setTopic(e.target.value)} disabled={!subject}>
+          <select
+            value={selectedTopic}
+            onChange={(e) => setSelectedTopic(e.target.value)}
+            disabled={!selectedSubject}
+          >
             <option value="">Izaberite temu</option>
-            {availableTopics.map((top, index) => (
-              <option key={index} value={top}>{top}</option>
-            ))}
+            {topics
+              .filter((t) => t.subject === selectedSubject)
+              .map((top, index) => (
+                <option key={index} value={top.name}>{top.name}</option>
+              ))}
           </select>
         </label>
 
