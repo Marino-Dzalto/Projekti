@@ -95,10 +95,10 @@ class Game(db.Model):
         UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")
     )
     teacher_id = Column(ForeignKey("teacher.teacher_id", ondelete="CASCADE"))
-    topic_selected = Column(String(255), nullable=False)
+    topic_selected = Column(String(255), nullable=True)
     game_code = Column(String(100), nullable=False, unique=True)
     start_time = Column(DateTime, nullable=False)
-    end_time = Column(DateTime, nullable=False)
+    end_time = Column(DateTime, nullable=True)
     is_locked = Column(Boolean, nullable=False)
 
     teacher = relationship("Teacher")

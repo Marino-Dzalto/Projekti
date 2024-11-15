@@ -14,9 +14,8 @@ const AdminGame = ({ adminData, players }) => {
 
 
   useEffect(() => {
-    const generatedCode = Math.random().toString(36).substring(2, 8).toUpperCase();
-    setGameCode(generatedCode);
-  }, []);
+    setGameCode(adminData.gameCode);
+  }, [adminData.gameCode]);
 
   // Fetchamo subjects iz backenda
   useEffect(() => {
@@ -25,7 +24,7 @@ const AdminGame = ({ adminData, players }) => {
         const response = await fetch('/api/subjects');  // treba namjestit enrpoin
         if (response.ok) {
           const data = await response.json();
-          setSubjects(data.subjects);
+          setSubjects(data);
         } else {
           console.error('Failed to fetch subjects');
         }
@@ -47,7 +46,7 @@ const AdminGame = ({ adminData, players }) => {
         const response = await fetch(`/api/topics?subject=${selectedSubject}`); // Treba namjestit endpoint
         if (response.ok) {
           const data = await response.json();
-          setTopics(data.topics);
+          setTopics(data);
         } else {
           console.error('Failed to fetch topics');
         }
@@ -62,9 +61,9 @@ const AdminGame = ({ adminData, players }) => {
     // Fetchamo igrače kakoo bi mogli popunit listu
     const fetchPlayers = async () => {
       try {
-        const response = await fetch(`/api/players/${gameCode}`);
+        const response = await fetch(`/api/players/${adminData.game_id}`);
         const result = await response.json();
-        setPlayerList(result);
+        setPlayerList(result.players);
       } catch (error) {
         console.error('Error fetching players:', error);
       }
@@ -72,11 +71,11 @@ const AdminGame = ({ adminData, players }) => {
 
     const interval = setInterval(fetchPlayers, 5000); // Poll every 5 seconds
     return () => clearInterval(interval);
-  }, [gameCode]);
+  }, [adminData.game_id]);
 
   const handleLockGame = async () => {
     try {
-      await fetch(`/api/lock-room/${gameCode}`, { method: 'POST' });
+      await fetch(`/api/lock-room/${adminData.game_id}`, { method: 'POST' });
       setIsGameLocked(true);
     } catch (error) {
       console.error('Error locking game room:', error);
@@ -91,12 +90,12 @@ const AdminGame = ({ adminData, players }) => {
     }
 
     try {
-      const response = await fetch('/api/create-game', {
+      const response = await fetch(`/api/set-topic/${adminData.game_id}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ gameCode, subject: selectedSubject, topic: selectedTopic })
+        body: JSON.stringify({ subject: selectedSubject, topic: selectedTopic, gameCode })
       });
 
       if (response.ok) {
@@ -106,6 +105,27 @@ const AdminGame = ({ adminData, players }) => {
       }
     } catch (error) {
       console.error('Greška pri pravljenju igre!', error);
+    }
+  };
+
+  // privremeno umjetno kreiranje igraca od strane admina
+  const createPlayer = async () => {
+    try {
+      const response = await fetch('/api/[PH]create-player', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ adminData, name:  Math.floor(Math.random() * 1000)})
+      });
+
+      if (response.ok) {
+        console.log('Igrac je uspješno napravljen');
+      } else {
+        console.error('Igrac nije napravljen');
+      }
+    } catch (error) {
+      console.error(error);
     }
   };
 
@@ -146,6 +166,9 @@ const AdminGame = ({ adminData, players }) => {
         <h2>Šifra igre: {gameCode}</h2>
         <button onClick={handleLockGame} disabled={isGameLocked}>
           {isGameLocked ? 'Igra zaključana' : 'Zaključaj igru'}
+        </button>
+        <button onClick={createPlayer}>
+          Kreiraj igraca
         </button>
       </div>
       <div className="player-list">

@@ -16,12 +16,27 @@ const App = () => {
 
   const handleCreateGame = async (data) => {
     try {
-      const response = await fetch('/api/create-room', {
+      const verifyResponse = await fetch('/api/verify-teacher', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
+
+      const verifyResult = await verifyResponse.json();
+
+      if(!verifyResponse.ok) {
+        alert(verifyResult.message);
+        return;
+      }
+
+      const response = await fetch('/api/create-game', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ teacher_id: verifyResult.teacher_id, data }),
+      });
+
       const result = await response.json();
+
       if (response.ok) {
         setAdminData(result); // room podaci potrebni za sobu
         setIsGameLocked(false); // inicijalno je soba otvorena...
