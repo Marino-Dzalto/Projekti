@@ -59,7 +59,10 @@ def create_game():
     db.session.add(new_game)
     db.session.commit()
 
-    return {"game_id": str(new_game.game_id), "game_code": new_game.game_code}, 200
+    return {
+        "game_id": str(new_game.game_id),
+        "game_code": new_game.game_code,
+    }, 200
 
 
 @app.post("/api/join-game/<string:code>")
@@ -85,6 +88,7 @@ def join_game(code):
     db.session.commit()
 
     players = Student.query.filter_by(game_id=game.game_id).all()
+    teacher = Teacher.query.filter_by(teacher_id=game.teacher_id).first()
 
     players_arr = [
         {"student_id": str(p.temp_student_id), "name": p.username} for p in players
@@ -92,7 +96,17 @@ def join_game(code):
 
     socketio.emit("updatePlayers", {"players": players_arr}, room=game.game_id)
 
-    return jsonify({"players": players_arr, "game_id": str(game.game_id)}), 200
+    return (
+        jsonify(
+            {
+                "players": players_arr,
+                "game_id": str(game.game_id),
+                "game_code": game.game_code,
+                "teacher_name": teacher.name,
+            }
+        ),
+        200,
+    )
 
 
 @app.post("/api/set-topic/<string:game_id>")

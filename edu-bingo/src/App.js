@@ -10,8 +10,8 @@ import { SocketProvider } from './SocketContext';
 
 const App = () => {
   const [adminData, setAdminData] = useState(null);
+  const [adminName, setAdminName] = useState(null);
   const [gameCode, setGameCode] = useState(null);
-  const [playerData, setPlayerData] = useState(false)
   const [players, setPlayers] = useState([]);  // gdje ćemo storeat igrače
   const [isGameLocked, setIsGameLocked] = useState(false); // je li soba zaključana/otključana
   const [isGameStarted, setIsGameStarted] = useState(false); //je li igra započela ili smo još u lobbyu
@@ -59,9 +59,9 @@ const App = () => {
         body: JSON.stringify(playerName),
       });
       const result = await response.json();
-      setPlayerData(result.game_id);
       setPlayers(result.players); // inicijalna lista za postavljanje igrača
-
+      setAdminName(result.teacher_name)
+      setGameCode(result.game_code)
     } catch (error) {
       console.error('Error joining game:', error);
     }
@@ -94,11 +94,11 @@ const App = () => {
             adminData={adminData}
             onStartGame={handleStartGame}
           />
-        ) : playerData ? (
+        ) : gameCode ? (
           // Ako je izgeneriran code, ali igra još nije krenla onda smo još u Lobbyu
           <Lobby
             gameCode={gameCode}
-            gameId={playerData.game_id}
+            adminName={adminName}
             players={players}
             onLeaveLobby={handleLeaveLobby}
             isGameLocked={isGameLocked}
