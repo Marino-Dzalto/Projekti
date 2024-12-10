@@ -1,6 +1,6 @@
 // src/components/AdminGame.js
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import '../styles/AdminGame.css';
 
 const AdminGame = ({ adminData, players }) => {
@@ -14,8 +14,8 @@ const AdminGame = ({ adminData, players }) => {
 
 
   useEffect(() => {
-    setGameCode(adminData.gameCode);
-  }, [adminData.gameCode]);
+    setGameCode(adminData.game_code);
+  }, [adminData.game_code]);
 
   // Fetchamo subjects iz backenda
   useEffect(() => {
@@ -43,7 +43,7 @@ const AdminGame = ({ adminData, players }) => {
 
     const fetchTopics = async () => {
       try {
-        const response = await fetch(`/api/topics?subject=${selectedSubject}`); // Treba namjestit endpoint
+        const response = await fetch(`/api/topics?subject=${selectedSubject.subject_id}`); // Treba namjestit endpoint
         if (response.ok) {
           const data = await response.json();
           setTopics(data);
@@ -108,37 +108,20 @@ const AdminGame = ({ adminData, players }) => {
     }
   };
 
-  // privremeno umjetno kreiranje igraca od strane admina
-  const createPlayer = async () => {
-    try {
-      const response = await fetch('/api/[PH]create-player', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ adminData, name:  Math.floor(Math.random() * 1000)})
-      });
-
-      if (response.ok) {
-        console.log('Igrac je uspješno napravljen');
-      } else {
-        console.error('Igrac nije napravljen');
-      }
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
   return (
     <div className="admin-game">
       <h1>EduBingo</h1>
       <div className="game-setup">
         <label>
           Predmet:
-          <select value={selectedSubject} onChange={(e) => setSelectedSubject(e.target.value)}>
+          <select value={selectedSubject.name} onChange={(e) => {
+            const selected = subjects.find(s => s.name === e.target.value)
+            setSelectedSubject(selected);
+            }}
+          >
             <option value="">Izaberite predmet</option>
-            {subjects.map((subj, index) => (
-              <option key={index} value={subj.name}>{subj.name}</option>
+            {subjects.map((subj) => (
+              <option key={subj.subject_id} value={subj.name}>{subj.name}</option>
             ))}
           </select>
         </label>
@@ -146,15 +129,18 @@ const AdminGame = ({ adminData, players }) => {
         <label>
           Tema:
           <select
-            value={selectedTopic}
-            onChange={(e) => setSelectedTopic(e.target.value)}
+            value={selectedTopic.name}
+            onChange={(e) => {
+              const selected = topics.find(t => t.name === e.target.value)
+              setSelectedTopic(selected)
+            }}
             disabled={!selectedSubject}
           >
             <option value="">Izaberite temu</option>
             {topics
-              .filter((t) => t.subject === selectedSubject)
-              .map((top, index) => (
-                <option key={index} value={top.name}>{top.name}</option>
+              .filter((t) => t.subject_id === selectedSubject.subject_id)
+              .map((top) => (
+                <option key={top.topic_id} value={top.name}>{top.name}</option>
               ))}
           </select>
         </label>
@@ -166,9 +152,6 @@ const AdminGame = ({ adminData, players }) => {
         <h2>Šifra igre: {gameCode}</h2>
         <button onClick={handleLockGame} disabled={isGameLocked}>
           {isGameLocked ? 'Igra zaključana' : 'Zaključaj igru'}
-        </button>
-        <button onClick={createPlayer}>
-          Kreiraj igraca
         </button>
       </div>
       <div className="player-list">

@@ -1,15 +1,17 @@
 // src/App.js
 
-import React, { useState, useEffect } from 'react';
-import Home from './components/Home';
-import AdminGame from './components/AdminGame';
-import Lobby from './components/Lobby';
-import GameBoard from './components/GameBoard';
+import React, { useState } from 'react';
 import './App.css';
+import AdminGame from './components/AdminGame';
+import GameBoard from './components/GameBoard';
+import Home from './components/Home';
+import Lobby from './components/Lobby';
+import { SocketProvider } from './SocketContext';
 
 const App = () => {
   const [adminData, setAdminData] = useState(null);
   const [gameCode, setGameCode] = useState(null);
+  const [playerData, setPlayerData] = useState(false)
   const [players, setPlayers] = useState([]);  // gdje ćemo storeat igrače
   const [isGameLocked, setIsGameLocked] = useState(false); // je li soba zaključana/otključana
   const [isGameStarted, setIsGameStarted] = useState(false); //je li igra započela ili smo još u lobbyu
@@ -39,6 +41,7 @@ const App = () => {
 
       if (response.ok) {
         setAdminData(result); // room podaci potrebni za sobu
+        setGameCode(adminData.game_code)
         setIsGameLocked(false); // inicijalno je soba otvorena...
       } else {
         alert(result.message);
@@ -48,16 +51,17 @@ const App = () => {
     }
   };
 
-  const handleJoinGame = async (code, playerData) => {
+  const handleJoinGame = async (code, playerName) => {
     try {
-      const response = await fetch(`/api/join-room/${code}`, {
+      const response = await fetch(`/api/join-game/${code}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(playerData),
+        body: JSON.stringify(playerName),
       });
       const result = await response.json();
-      setGameCode(code);
+      setPlayerData(result.game_id);
       setPlayers(result.players); // inicijalna lista za postavljanje igrača
+
     } catch (error) {
       console.error('Error joining game:', error);
     }
@@ -78,48 +82,33 @@ const App = () => {
     }
   };
 
-  useEffect(() => {
-    // Da bismo testirali pojedinu stranicu samo uncommentaj pojedini dio
-    // AdminGame
-    //setAdminData({ roomId: '123', roomName: 'Test Room' });
-
-    // Lobby
-    //setGameCode('123');
-    //setPlayers([{ name: 'Player1' }, { name: 'Player2' }]);
-
-    // GameBoard
-    //setIsGameStarted(true);
-    //setPlayers([{ name: 'Player1' }, { name: 'Player2' }]);
-    //setGameCode('123');
-
-    //Home
-    //samo zakomentiraj sve
-  }, []);
-
   return (
-    <div className="App">
-      {isGameStarted ? (
-        // Ako je igra krenula idemo na GameBoard
-        <GameBoard players={players} gameCode={gameCode} />
-      ) : gameCode ? (
-        // Ako je izgeneriran code, ali igra još nije krenla onda smo još u Lobbyu
-        <Lobby
-          gameCode={gameCode}
-          players={players}
-          onLeaveLobby={handleLeaveLobby}
-          isGameLocked={isGameLocked}
-        />
-      ) : adminData ? (
-        // Ako adminData imamo, a Game code jos ne onda mi pokaži AdminGame(teacher dio)
-        <AdminGame
-          adminData={adminData}
-          onStartGame={handleStartGame}
-        />
-      ) : (
-        // Pokaži index po defaultu
-        <Home onCreateGame={handleCreateGame} onJoinGame={handleJoinGame} />
-      )}
-    </div>
+    <SocketProvider>
+      <div className="App">
+        {isGameStarted ? (
+          // Ako je igra krenula idemo na GameBoard
+          <GameBoard players={players} gameCode={gameCode} />
+        ) : adminData ? (
+          // Ako adminData imamo, a Game code jos ne onda mi pokaži AdminGame(teacher dio)
+          <AdminGame
+            adminData={adminData}
+            onStartGame={handleStartGame}
+          />
+        ) : playerData ? (
+          // Ako je izgeneriran code, ali igra još nije krenla onda smo još u Lobbyu
+          <Lobby
+            gameCode={gameCode}
+            gameId={playerData.game_id}
+            players={players}
+            onLeaveLobby={handleLeaveLobby}
+            isGameLocked={isGameLocked}
+          />
+        ) : (
+          // Pokaži index po defaultu
+          <Home onCreateGame={handleCreateGame} onJoinGame={handleJoinGame} />
+        )}
+      </div>
+    </SocketProvider>
   );
 };
 

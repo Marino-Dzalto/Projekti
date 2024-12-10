@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useSocket } from '../SocketContext';
 import '../styles/Lobby.css'; // Uključite CSS datoteku za stilizaciju
 
 const Lobby = ({ gameCode, adminName, players, isGameLocked }) => {
@@ -7,6 +8,7 @@ const Lobby = ({ gameCode, adminName, players, isGameLocked }) => {
   const [chat, setChat] = useState([]);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [updatedPlayers, setUpdatedPlayers] = useState(players);
+  const socket = useSocket();
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -17,22 +19,17 @@ const Lobby = ({ gameCode, adminName, players, isGameLocked }) => {
     return () => clearInterval(interval);
   }, []);
 
-  // Funkcija kako bi se igrači dohvatili periodično
   useEffect(() => {
-    const fetchPlayers = async () => {
-      try {
-        const response = await fetch(`/api/players/${gameCode}`);
-        const result = await response.json();
-        setUpdatedPlayers(result); // Update liste igrača sa podatcim sa servera
-      } catch (error) {
-        console.error('Error fetching players:', error);
-      }
-    };
+    if (!socket) return;
 
-    // Poll svakih par sekundi da možemo ažurno updateat listu
-    const interval = setInterval(fetchPlayers, 5000);
-    return () => clearInterval(interval);
-  }, [gameCode]);
+    socket.on("updatePlayers", (data) => {
+      setUpdatedPlayers(data.players);
+    });
+
+    return () => {
+      socket.off("updatePlayers");
+    };
+  }, [socket]);
 
   const handleSendChat = (e) => {
     e.preventDefault();

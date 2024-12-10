@@ -10,7 +10,7 @@ from sqlalchemy import (
     Integer,
     String,
     text,
-    Boolean
+    Boolean,
 )
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import UUID
@@ -31,8 +31,8 @@ class Task(db.Model):
         UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")
     )
     question = Column(String(255), nullable=False)
-    subject = Column(String(100), nullable=False)
-    category = Column(String(100))
+    subject_id = Column(ForeignKey("subjects.subject_id", ondelete="SET NULL"))
+    topic_id = Column(ForeignKey("topics.topic_id", ondelete="SET NULL"))
     difficulty = Column(String(10))
 
     multiple_choice_answers = relationship(
@@ -44,6 +44,9 @@ class Task(db.Model):
     written_answers = relationship(
         "WrittenAnswer", back_populates="task", cascade="all, delete-orphan"
     )
+
+    subject = relationship("Subject")
+    topic = relationship("Topic")
 
 
 class MultipleChoiceAnswer(db.Model):
@@ -95,13 +98,16 @@ class Game(db.Model):
         UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")
     )
     teacher_id = Column(ForeignKey("teacher.teacher_id", ondelete="CASCADE"))
-    topic_selected = Column(String(255), nullable=True)
+    topic_selected = Column(
+        ForeignKey("topics.topic_id", ondelete="SET NULL"), nullable=True
+    )
     game_code = Column(String(100), nullable=False, unique=True)
     start_time = Column(DateTime, nullable=False)
     end_time = Column(DateTime, nullable=True)
     is_locked = Column(Boolean, nullable=False)
 
     teacher = relationship("Teacher")
+    topic = relationship("Topic")
 
 
 class Student(db.Model):
@@ -111,7 +117,7 @@ class Student(db.Model):
         UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")
     )
     game_id = Column(ForeignKey("game.game_id", ondelete="CASCADE"))
-    username = Column(String(100), nullable=False, unique=True)
+    username = Column(String(100), nullable=False)
     start_time = Column(DateTime, nullable=False)
     end_time = Column(DateTime, nullable=False)
     is_active = Column(Boolean, nullable=False)
@@ -134,3 +140,20 @@ class Score(db.Model):
     game = relationship("Game")
     task = relationship("Task")
     temp_user = relationship("Student")
+
+
+class Topic(db.Model):
+    __tablename__ = "topics"
+
+    topic_id = Column(UUID(as_uuid=True), primary_key=True)
+    name = Column(String(100), nullable=False, unique=True)
+    subject_id = Column(ForeignKey("subjects.subject_id", ondelete="CASCADE"))
+
+    subject = relationship("Subject")
+
+
+class Subject(db.Model):
+    __tablename__ = "subjects"
+
+    subject_id = Column(UUID(as_uuid=True), primary_key=True)
+    name = Column(String(100), nullable=False, unique=True)

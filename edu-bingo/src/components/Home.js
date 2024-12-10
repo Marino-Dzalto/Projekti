@@ -1,6 +1,7 @@
 // src/components/Home.js
 
 import React, { useState } from 'react';
+import { useSocket } from '../SocketContext';
 
 const Home = ({ onCreateGame, onJoinGame }) => {
   const [adminUsername, setAdminUsername] = useState('');
@@ -9,6 +10,7 @@ const Home = ({ onCreateGame, onJoinGame }) => {
   const [gameCode, setGameCode] = useState('');
   const [playerName, setPlayerName] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const socket = useSocket()
 
   const handleStartGame = () => {
     if (!adminUsername || !adminPass || !numPlayers) {
@@ -23,8 +25,13 @@ const Home = ({ onCreateGame, onJoinGame }) => {
 
   const handleJoinGame = () => {
     if (gameCode && playerName) {
-      const exists = onJoinGame({ gameCode, playerName: `${playerName}` });
+      const exists = onJoinGame(gameCode, playerName);
       if (exists) {
+        if (!socket) {
+          console.error("Socket not initialized")
+        } else {
+          socket.emit('joinGame', { game_code: gameCode, player_name: playerName })
+        }
         setErrorMessage('');
       } else {
         setErrorMessage("Šifra igre je neispravna.");
