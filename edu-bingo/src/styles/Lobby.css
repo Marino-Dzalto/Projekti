@@ -67,20 +67,6 @@ form {
   align-items: center;
 }
 
-input[type="text"] {
-  flex: 1;
-  padding: 10px;
-  border: 2px solid #b39ddb;
-  border-radius: 8px;
-  outline: none;
-  transition: border-color 0.3s, transform 0.1s;
-  font-size: 1rem;
-}
-
-input[type="text"]:focus {
-  border-color: #7b1fa2;
-  transform: scale(1.05);
-}
 
 button {
   padding: 8px 16px;

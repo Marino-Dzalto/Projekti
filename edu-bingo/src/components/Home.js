@@ -1,6 +1,8 @@
 // src/components/Home.js
 
 import React, { useState } from 'react';
+import '@fortawesome/fontawesome-free/css/all.min.css';
+
 
 const Home = ({ onCreateGame, onJoinGame }) => {
   const [adminUsername, setAdminUsername] = useState('');
@@ -41,45 +43,62 @@ const Home = ({ onCreateGame, onJoinGame }) => {
 
   return (
     <div className="home">
-      <h1>EduBingo</h1>
-      {errorMessage && <p className="error">{errorMessage}</p>}
-      <div className="admin-info">
-        <h2>Kreiraj igru</h2>
-        <input 
-          type="text" 
-          placeholder="Username admina" 
-          value={adminUsername} 
-          onChange={(e) => setAdminUsername(e.target.value)} 
-        />
-        <input 
-          type="text" 
-          placeholder="Password admina" 
-          value={adminPass} 
-          onChange={(e) => setAdminPass(e.target.value)} 
-        />
-        <input 
-          type="number" 
-          placeholder="Broj igrača" 
-          value={numPlayers} 
-          onChange={(e) => setNumPlayers(e.target.value)} 
-        />
-        <button onClick={handleStartGame}>Start Game</button>
+      <div className="clouds">
+        <div className="cloud"><i className="fas fa-cloud"></i></div>
+        <div className="cloud"><i className="fas fa-cloud"></i></div>
+        <div className="cloud"><i className="fas fa-cloud"></i></div>
+        <div className="cloud"><i className="fas fa-cloud"></i></div>
+        <div className="cloud"><i className="fas fa-cloud"></i></div>
+        <div className="cloud"><i className="fas fa-cloud"></i></div>
+        <div className="cloud"><i className="fas fa-cloud"></i></div>
+        <div className="cloud"><i className="fas fa-cloud"></i></div>
+        <div className="cloud"><i className="fas fa-cloud"></i></div>
       </div>
-      <div className="join-game">
-        <h2>Pridruži se igri</h2>
-        <input 
-          type="text" 
-          placeholder="Šifra igre" 
-          value={gameCode} 
-          onChange={(e) => setGameCode(e.target.value)} 
+      <h1 className="title">
+        <i className="fas fa-graduation-cap"></i> EduBingo
+      </h1>
+      {errorMessage && <p className="error">{errorMessage}</p>}
+      <div className="card">
+        <h2><i className="fas fa-cogs"></i> Kreiraj igru</h2>
+        <input
+          type="text"
+          placeholder="Username admina"
+          value={adminUsername}
+          onChange={(e) => setAdminUsername(e.target.value)}
         />
-        <input 
-          type="text" 
-          placeholder="Ime igrača" 
-          value={playerName} 
-          onChange={(e) => setPlayerName(e.target.value)} 
+        <input
+          type="text"
+          placeholder="Password admina"
+          value={adminPass}
+          onChange={(e) => setAdminPass(e.target.value)}
         />
-        <button onClick={handleJoinGame}>Start</button>
+        <input
+          type="number"
+          placeholder="Broj igrača"
+          value={numPlayers}
+          onChange={(e) => setNumPlayers(e.target.value)}
+        />
+        <button onClick={handleStartGame}>
+          <i className="fas fa-play"></i> Start Game
+        </button>
+      </div>
+      <div className="card">
+        <h2><i className="fas fa-sign-in-alt"></i> Pridruži se igri</h2>
+        <input
+          type="text"
+          placeholder="Šifra igre"
+          value={gameCode}
+          onChange={(e) => setGameCode(e.target.value)}
+        />
+        <input
+          type="text"
+          placeholder="Ime igrača"
+          value={playerName}
+          onChange={(e) => setPlayerName(e.target.value)}
+        />
+        <button onClick={handleJoinGame}>
+          <i className="fas fa-sign-in-alt"></i> Join Game
+        </button>
       </div>
     </div>
   );
