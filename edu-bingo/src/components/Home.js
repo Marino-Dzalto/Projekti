@@ -2,6 +2,8 @@
 
 import React, { useState } from 'react';
 import '@fortawesome/fontawesome-free/css/all.min.css';
+import mickey from "../mickey.png";
+import minnie from "../minnie.png";
 
 
 const Home = ({ onCreateGame, onJoinGame }) => {
@@ -100,6 +102,17 @@ const Home = ({ onCreateGame, onJoinGame }) => {
           <i className="fas fa-sign-in-alt"></i> Join Game
         </button>
       </div>
+      {/* Mickey and Minnie */}
+      <div className = "character">
+        <div className="minnie">
+            <img src={minnie} alt="Minnie pic"/>
+        </div>
+        <div className="mickey">
+            <img src={mickey} alt="Mickey pic"/>
+        </div>
+        
+      </div>
+      
     </div>
   );
 };

@@ -65,8 +65,8 @@ const App = () => {
     //setAdminData({ roomId: '123', roomName: 'Test Room' });
 
     // Lobby
-    //setGameCode('123');
-    //setPlayers([{ name: 'Player1' }, { name: 'Player2' }]);
+    setGameCode('123');
+    setPlayers([{ name: 'Player1' }, { name: 'Player2' }]);
 
     // GameBoard
     //setIsGameStarted(true);
