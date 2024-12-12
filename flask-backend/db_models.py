@@ -105,6 +105,7 @@ class Game(db.Model):
     start_time = Column(DateTime, nullable=False)
     end_time = Column(DateTime, nullable=True)
     is_locked = Column(Boolean, nullable=False)
+    max_players = Column(Integer, nullable=False)
 
     teacher = relationship("Teacher")
     topic = relationship("Topic")
@@ -119,8 +120,9 @@ class Student(db.Model):
     game_id = Column(ForeignKey("game.game_id", ondelete="CASCADE"))
     username = Column(String(100), nullable=False)
     start_time = Column(DateTime, nullable=False)
-    end_time = Column(DateTime, nullable=False)
+    end_time = Column(DateTime, nullable=True)
     is_active = Column(Boolean, nullable=False)
+    socket_id = Column(String(255), nullable=True)
 
     game = relationship("Game")
 

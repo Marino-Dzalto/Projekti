@@ -12,7 +12,7 @@ const App = () => {
   const [adminData, setAdminData] = useState(null);
   const [adminName, setAdminName] = useState(null);
   const [gameCode, setGameCode] = useState(null);
-  const [players, setPlayers] = useState([]);  // gdje ćemo storeat igrače
+  const [players, setPlayers] = useState(null);  // gdje ćemo storeat igrače
   const [isGameLocked, setIsGameLocked] = useState(false); // je li soba zaključana/otključana
   const [isGameStarted, setIsGameStarted] = useState(false); //je li igra započela ili smo još u lobbyu
 
@@ -41,7 +41,6 @@ const App = () => {
 
       if (response.ok) {
         setAdminData(result); // room podaci potrebni za sobu
-        setGameCode(adminData.game_code)
         setIsGameLocked(false); // inicijalno je soba otvorena...
       } else {
         alert(result.message);
@@ -51,35 +50,9 @@ const App = () => {
     }
   };
 
-  const handleJoinGame = async (code, playerName) => {
-    try {
-      const response = await fetch(`/api/join-game/${code}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(playerName),
-      });
-      const result = await response.json();
-      setPlayers(result.players); // inicijalna lista za postavljanje igrača
-      setAdminName(result.teacher_name)
-      setGameCode(result.game_code)
-    } catch (error) {
-      console.error('Error joining game:', error);
-    }
-  };
-
   const handleLeaveLobby = () => {
     setGameCode(null);
     setIsGameStarted(false);
-  };
-
-  const handleStartGame = async () => {
-    try {
-      await fetch(`/api/lock-room/${gameCode}`, { method: 'POST' });
-      setIsGameLocked(true); // lockamo sobu, igra kreće, ne može se nitko više pridružiti
-      setIsGameStarted(true);
-    } catch (error) {
-      console.error('Error locking the game:', error);
-    }
   };
 
   return (
@@ -92,9 +65,8 @@ const App = () => {
           // Ako adminData imamo, a Game code jos ne onda mi pokaži AdminGame(teacher dio)
           <AdminGame
             adminData={adminData}
-            onStartGame={handleStartGame}
           />
-        ) : gameCode ? (
+        ) : players ? (
           // Ako je izgeneriran code, ali igra još nije krenla onda smo još u Lobbyu
           <Lobby
             gameCode={gameCode}
@@ -105,7 +77,7 @@ const App = () => {
           />
         ) : (
           // Pokaži index po defaultu
-          <Home onCreateGame={handleCreateGame} onJoinGame={handleJoinGame} />
+          <Home onCreateGame={handleCreateGame} setPlayers={setPlayers} setGameCode={setGameCode} setAdminName={setAdminName}/>
         )}
       </div>
     </SocketProvider>

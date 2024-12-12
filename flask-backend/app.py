@@ -3,7 +3,7 @@ from datetime import datetime
 from dotenv import load_dotenv
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from flask_socketio import SocketIO, emit, join_room
+from flask_socketio import SocketIO, emit, join_room, leave_room
 from db_models import (
     db,
     Task,
@@ -54,6 +54,7 @@ def create_game():
         game_code=data["data"]["gameCode"],
         start_time=datetime.now(),
         is_locked=False,
+        max_players=data["data"]["numPlayers"],
     )
 
     db.session.add(new_game)
@@ -76,18 +77,33 @@ def join_game(code):
     if not game:
         return {"message": "Game not found"}, 404
 
+    if (
+        len(
+            Student.query.filter(
+                Student.game_id == game.game_id,
+                Student.is_active == True,
+                Student.end_time.is_(None),
+            ).all()
+        )
+        >= game.max_players
+    ):
+        return {"message": "Game is full"}, 404
+
     new_student = Student(
         game_id=game.game_id,
         username=player_name,
         start_time=datetime.now(),
-        end_time=datetime.now(),  # promijenit
         is_active=True,
     )
 
     db.session.add(new_student)
     db.session.commit()
 
-    players = Student.query.filter_by(game_id=game.game_id).all()
+    players = Student.query.filter(
+        Student.game_id == game.game_id,
+        Student.is_active == True,
+        Student.end_time.is_(None),
+    ).all()
     teacher = Teacher.query.filter_by(teacher_id=game.teacher_id).first()
 
     players_arr = [
@@ -139,7 +155,11 @@ def lock_room(game_id):
 
 @app.get("/api/players/<string:game_id>")
 def get_players(game_id):
-    players = Student.query.filter_by(game_id=game_id).all()
+    players = Student.query.filter(
+        Student.game_id == game_id,
+        Student.end_time.is_(None),
+        Student.is_active == True,
+    ).all()
 
     players_arr = [
         {"student_id": str(p.temp_student_id), "name": p.username} for p in players
@@ -174,6 +194,7 @@ def get_topics():
 @socketio.on("joinGame")
 def handle_join_room(data):
     game_code = data["game_code"]
+    player_name = data["player_name"]
 
     game = Game.query.filter(
         Game.game_code == game_code, Game.end_time.is_(None), Game.is_locked == False
@@ -183,8 +204,22 @@ def handle_join_room(data):
         emit("error", {"message": "Game not found or locked"}, to=request.sid)
         return
 
+    student = Student.query.filter_by(
+        game_id=game.game_id, username=player_name
+    ).first()
+
+    if student:
+        student.socket_id = request.sid
+        db.session.commit()
+
     join_room(game.game_id)
     handle_update_players({"game_id": game.game_id})
+
+
+@socketio.on("leaveGame")
+def handle_leave_game(data):
+    # implementirati kad bude zatrebalo
+    ...
 
 
 @socketio.on("updatePlayers")
@@ -201,11 +236,30 @@ def handle_update_players(data):
 
     players = [
         {"student_id": str(p.temp_student_id), "name": p.username}
-        for p in Student.query.filter_by(game_id=game.game_id).all()
+        for p in Student.query.filter(
+            Student.game_id == game.game_id,
+            Student.is_active == True,
+            Student.end_time.is_(None),
+        ).all()
     ]
 
     emit("updatePlayers", {"players": players}, room=game.game_id)
 
 
+@socketio.on("disconnect")
+def handle_player_disconnect():
+    student = Student.query.filter_by(socket_id=request.sid).first()
+
+    if student:
+        student.is_active = False
+        student.end_time = datetime.now()
+
+        db.session.commit()
+
+        leave_room(student.game_id)
+
+        handle_update_players({"game_id": student.game_id})
+
+
 if __name__ == "__main__":
-    socketio.run(app, debug=True)
+    socketio.run(app, host="0.0.0.0", port=5000, debug=True)

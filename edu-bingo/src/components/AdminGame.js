@@ -1,9 +1,10 @@
 // src/components/AdminGame.js
 
 import React, { useEffect, useState } from 'react';
+import { useSocket } from '../SocketContext';
 import '../styles/AdminGame.css';
 
-const AdminGame = ({ adminData, players }) => {
+const AdminGame = ({ adminData }) => {
   const [gameCode, setGameCode] = useState('');
   const [playerList, setPlayerList] = useState([]);
   const [isGameLocked, setIsGameLocked] = useState(false);
@@ -11,6 +12,7 @@ const AdminGame = ({ adminData, players }) => {
   const [selectedSubject, setSelectedSubject] = useState('');// trenutacni predmet
   const [topics, setTopics] = useState([]);// teme s backenda
   const [selectedTopic, setSelectedTopic] = useState('');//trenutacna tema
+  const socket = useSocket();
 
 
   useEffect(() => {
@@ -58,20 +60,16 @@ const AdminGame = ({ adminData, players }) => {
   }, [selectedSubject]);
 
   useEffect(() => {
-    // Fetchamo igrače kakoo bi mogli popunit listu
-    const fetchPlayers = async () => {
-      try {
-        const response = await fetch(`/api/players/${adminData.game_id}`);
-        const result = await response.json();
-        setPlayerList(result.players);
-      } catch (error) {
-        console.error('Error fetching players:', error);
-      }
-    };
+    if (socket) {
+      socket.on("updatePlayers", (data) => {
+        setPlayerList(data.players);
+      });
 
-    const interval = setInterval(fetchPlayers, 5000); // Poll every 5 seconds
-    return () => clearInterval(interval);
-  }, [adminData.game_id]);
+      return () => {
+        socket.off('updatePlayers');
+      };
+    }
+  }, [socket]);
 
   const handleLockGame = async () => {
     try {

@@ -3,11 +3,11 @@
 import React, { useState } from 'react';
 import { useSocket } from '../SocketContext';
 
-const Home = ({ onCreateGame, onJoinGame }) => {
+const Home = ({ onCreateGame, setPlayers, setGameCode, setAdminName}) => {
   const [adminUsername, setAdminUsername] = useState('');
   const [adminPass, setAdminPass] = useState('');
   const [numPlayers, setNumPlayers] = useState('');
-  const [gameCode, setGameCode] = useState('');
+  const [gameCode, setGameCodeLocal] = useState('');
   const [playerName, setPlayerName] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const socket = useSocket()
@@ -23,20 +23,33 @@ const Home = ({ onCreateGame, onJoinGame }) => {
       .catch(() => setErrorMessage("Greška pri kreiranju igre."));
   };
 
-  const handleJoinGame = () => {
+  const handleJoinGame = async () => {
     if (gameCode && playerName) {
-      const exists = onJoinGame(gameCode, playerName);
-      if (exists) {
-        if (!socket) {
-          console.error("Socket not initialized")
+      try {
+        const response = await fetch(`/api/join-game/${gameCode}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(playerName),
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          setPlayers(result.players);
+          setGameCode(result.game_code);
+          setAdminName(result.teacher_name);
+
+          if (socket) {
+            socket.emit('joinGame', { game_code: result.game_code, player_name: playerName });
+          } else {
+            console.error("Socket not initialized");
+          }
         } else {
-          socket.emit('joinGame', { game_code: gameCode, player_name: playerName })
+          alert(result.message);
         }
-        setErrorMessage('');
-      } else {
-        setErrorMessage("Šifra igre je neispravna.");
+      } catch (error) {
+        console.error('Error joining game:', error);
       }
-      setPlayerName('');
     } else {
       setErrorMessage("Unesite šifru igre i vaše ime i prezime.");
     }
@@ -78,7 +91,7 @@ const Home = ({ onCreateGame, onJoinGame }) => {
           type="text" 
           placeholder="Šifra igre" 
           value={gameCode} 
-          onChange={(e) => setGameCode(e.target.value)} 
+          onChange={(e) => setGameCodeLocal(e.target.value)} 
         />
         <input 
           type="text" 
