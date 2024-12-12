@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/GameBoard.css';
+import mickey from "../mickey.png";
+import minnie from "../minnie.png";
 
 const GameBoard = () => {
   const [cards, setCards] = useState([]);
@@ -109,6 +111,17 @@ const GameBoard = () => {
             <p>Redni broj: {card.number}</p>
           </div>
         ))}
+      </div>
+
+      {/* Mickey and Minnie */}
+      <div className = "character">
+        <div className="minnie">
+            <img src={minnie} alt="Minnie pic"/>
+        </div>
+        <div className="mickey">
+            <img src={mickey} alt="Mickey pic"/>
+        </div>
+        
       </div>
 
       {/* Modal za otvaranje prozora pitanja */}
