@@ -3,7 +3,7 @@ from datetime import datetime
 from dotenv import load_dotenv
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from flask_socketio import SocketIO, emit, join_room, leave_room
+from flask_socketio import SocketIO, emit, join_room, leave_room, send
 from db_models import (
     db,
     Task,
@@ -196,7 +196,6 @@ def handle_admin_join(data):
     game_id = data["game_id"]
 
     join_room(game_id)
-    print(f"{request.sid} joined room {game_id}")
 
 
 @socketio.on("joinGame")
@@ -265,8 +264,25 @@ def handle_player_disconnect():
         db.session.commit()
 
         leave_room(str(student.game_id))
-
         handle_update_players({"game_id": str(student.game_id)})
+
+
+@socketio.on("chatMessage")
+def handle_chat_message(data):
+    game_code = data["game_code"]
+    message = data["message"]
+    timestamp = datetime.now().strftime("%H:%M:%S")
+
+    game = Game.query.filter(
+        Game.game_code == game_code, Game.end_time.is_(None), Game.is_locked == False
+    ).first()
+
+    if game:
+        emit(
+            "chatMessage",
+            {"message": message, "timestamp": timestamp},
+            room=str(game.game_id),
+        )
 
 
 if __name__ == "__main__":
