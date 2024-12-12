@@ -61,15 +61,22 @@ const AdminGame = ({ adminData }) => {
 
   useEffect(() => {
     if (socket) {
-      socket.on("updatePlayers", (data) => {
-        setPlayerList(data.players);
-      });
+
+      socket.emit('adminJoin', {"game_id": adminData.game_id})
+
+      const handleUpdatePlayers = (data) => {
+        if (data && data.players) {
+          setPlayerList(data.players);
+        }
+      };
+
+      socket.on("updatePlayers", handleUpdatePlayers);
 
       return () => {
         socket.off('updatePlayers');
       };
     }
-  }, [socket]);
+  }, [socket, adminData]);
 
   const handleLockGame = async () => {
     try {

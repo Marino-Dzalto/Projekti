@@ -20,15 +20,19 @@ const Lobby = ({ gameCode, adminName, players, isGameLocked }) => {
   }, []);
 
   useEffect(() => {
-    if (!socket) return;
+    if (socket) {
+      const handleUpdatePlayers = (data) => {
+        if (data && data.players) {
+          setUpdatedPlayers(data.players);
+        }
+      };
 
-    socket.on("updatePlayers", (data) => {
-      setUpdatedPlayers(data.players);
-    });
+      socket.on("updatePlayers", handleUpdatePlayers);
 
-    return () => {
-      socket.off("updatePlayers");
-    };
+      return () => {
+        socket.off("updatePlayers");
+      };
+    }
   }, [socket]);
 
   const handleSendChat = (e) => {

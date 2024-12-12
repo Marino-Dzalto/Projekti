@@ -191,6 +191,13 @@ def get_topics():
     return jsonify(topics_arr), 200
 
 
+@socketio.on("adminJoin")
+def handle_admin_join(data):
+    game_id = data["game_id"]
+
+    join_room(game_id)
+
+
 @socketio.on("joinGame")
 def handle_join_room(data):
     game_code = data["game_code"]
