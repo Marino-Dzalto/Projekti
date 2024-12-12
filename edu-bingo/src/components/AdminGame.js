@@ -5,7 +5,6 @@ import { useSocket } from '../SocketContext';
 import '../styles/AdminGame.css';
 
 const AdminGame = ({ adminData }) => {
-  const [gameCode, setGameCode] = useState('');
   const [playerList, setPlayerList] = useState([]);
   const [isGameLocked, setIsGameLocked] = useState(false);
   const [subjects, setSubjects] = useState([]);// predmeti s backenda
@@ -13,11 +12,6 @@ const AdminGame = ({ adminData }) => {
   const [topics, setTopics] = useState([]);// teme s backenda
   const [selectedTopic, setSelectedTopic] = useState('');//trenutacna tema
   const socket = useSocket();
-
-
-  useEffect(() => {
-    setGameCode(adminData.game_code);
-  }, [adminData.game_code]);
 
   // Fetchamo subjects iz backenda
   useEffect(() => {
@@ -100,7 +94,7 @@ const AdminGame = ({ adminData }) => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ subject: selectedSubject, topic: selectedTopic, gameCode })
+        body: JSON.stringify({ subject: selectedSubject, topic: selectedTopic, gameCode: adminData.game_code })
       });
 
       if (response.ok) {
@@ -154,7 +148,7 @@ const AdminGame = ({ adminData }) => {
       </div>
 
       <div className="game-code">
-        <h2>Šifra igre: {gameCode}</h2>
+        <h2>Šifra igre: {adminData.game_code}</h2>
         <button onClick={handleLockGame} disabled={isGameLocked}>
           {isGameLocked ? 'Igra zaključana' : 'Zaključaj igru'}
         </button>

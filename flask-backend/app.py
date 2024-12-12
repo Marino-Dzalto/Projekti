@@ -196,6 +196,7 @@ def handle_admin_join(data):
     game_id = data["game_id"]
 
     join_room(game_id)
+    print(f"{request.sid} joined room {game_id}")
 
 
 @socketio.on("joinGame")
@@ -219,8 +220,8 @@ def handle_join_room(data):
         student.socket_id = request.sid
         db.session.commit()
 
-    join_room(game.game_id)
-    handle_update_players({"game_id": game.game_id})
+    join_room(str(game.game_id))
+    handle_update_players({"game_id": str(game.game_id)})
 
 
 @socketio.on("leaveGame")
@@ -250,7 +251,7 @@ def handle_update_players(data):
         ).all()
     ]
 
-    emit("updatePlayers", {"players": players}, room=game.game_id)
+    emit("updatePlayers", {"players": players}, room=game_id)
 
 
 @socketio.on("disconnect")
