@@ -264,9 +264,9 @@ def handle_player_disconnect():
 
         db.session.commit()
 
-        leave_room(student.game_id)
+        leave_room(str(student.game_id))
 
-        handle_update_players({"game_id": student.game_id})
+        handle_update_players({"game_id": str(student.game_id)})
 
 
 if __name__ == "__main__":
