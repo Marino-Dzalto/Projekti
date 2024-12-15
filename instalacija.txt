@@ -21,7 +21,6 @@ KAKO POKRENUTI React
 
 BITNE KOMANDE
 rm -rf node_modules        # Briše folder sa zavisnostima
-rm package-lock.json       # Briše lock file koji sadrži verzije zavisnosti
 npm install                # Ponovo instalira sve zavisnosti
 
 

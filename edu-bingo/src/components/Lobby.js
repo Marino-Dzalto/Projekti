@@ -1,11 +1,15 @@
-import React, { useEffect, useState } from 'react';
-import './Lobby.css'; // Uključite CSS datoteku za stilizaciju
+import React, { useEffect, useRef, useState } from 'react';
+import { useSocket } from '../SocketContext';
+import '../styles/Lobby.css'; // Uključite CSS datoteku za stilizaciju
 
-const Lobby = ({ gameCode, adminName, players }) => {
+const Lobby = ({ gameCode, adminName, players, isGameLocked }) => {
   const [timer, setTimer] = useState(0);
   const [chatMessage, setChatMessage] = useState('');
   const [chat, setChat] = useState([]);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [updatedPlayers, setUpdatedPlayers] = useState(players);
+  const chatWindowRef = useRef(null);
+  const socket = useSocket();
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -16,10 +20,41 @@ const Lobby = ({ gameCode, adminName, players }) => {
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    if (socket) {
+      const handleUpdatePlayers = (data) => {
+        if (data && data.players) {
+          setUpdatedPlayers(data.players);
+        }
+      };
+
+      const handleUpdateChat = (data) => {
+        if (data && data.message && data.timestamp) {
+          setChat((prevChat) => [...prevChat, { message: data.message, timestamp: data.timestamp }]);
+        }
+      }
+
+      socket.on("updatePlayers", handleUpdatePlayers);
+      socket.on("chatMessage", handleUpdateChat);
+
+      return () => {
+        socket.off("updatePlayers", handleUpdatePlayers);
+        socket.off("chatMessage", handleUpdateChat);
+      };
+    }
+  }, [socket]);
+
+  useEffect(() => {
+    if (chatWindowRef.current) {
+      chatWindowRef.current.scrollTop = chatWindowRef.current.scrollHeight;
+    }
+
+  }, [chat]);
+
   const handleSendChat = (e) => {
     e.preventDefault();
     if (chatMessage) {
-      setChat((prevChat) => [...prevChat, chatMessage]);
+      socket.emit("chatMessage", { game_code: gameCode, message: chatMessage });
       setChatMessage('');
     }
   };
@@ -36,14 +71,15 @@ const Lobby = ({ gameCode, adminName, players }) => {
         <h2>Šifra igre: {gameCode}</h2>
         <h3>Admin: {adminName}</h3>
         <div className="timer">Vrijeme u lobby-u: {timer} sekundi</div>
+        {isGameLocked && <p className="locked-message">Igra je zaključana. Nema novih igrača.</p>}
       </div>
       <div className="main-content">
         <div className="player-list">
           <h3>Igrači:</h3>
           <ul>
-            {players.length > 0 ? (
-              players.map((player, index) => (
-                <li key={index}>{player}</li>
+            {updatedPlayers.length > 0 ? (
+              updatedPlayers.map((player, index) => (
+                <li key={index}>{player.name || player}</li>
               ))
             ) : (
               <li>Nema igrača u igri.</li>
@@ -52,9 +88,12 @@ const Lobby = ({ gameCode, adminName, players }) => {
         </div>
         <div className="chat">
           <h3>Chat</h3>
-          <div className="chat-window">
-            {chat.map((message, index) => (
-              <div key={index}>{message}</div>
+          <div className="chat-window" ref={chatWindowRef}>
+            {chat.map((item, index) => (
+              <div className="message-box" key={index}>
+                <div>{item.message}</div>
+                <small>{item.timestamp}</small>
+              </div>
             ))}
           </div>
           <form onSubmit={handleSendChat}>

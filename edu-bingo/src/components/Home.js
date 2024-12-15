@@ -1,34 +1,55 @@
 // src/components/Home.js
 
 import React, { useState } from 'react';
+import { useSocket } from '../SocketContext';
 
-const Home = ({ onCreateGame, onJoinGame }) => {
-  const [adminName, setAdminName] = useState('');
-  const [adminSurname, setAdminSurname] = useState('');
+const Home = ({ onCreateGame, setPlayers, setGameCode, setAdminName}) => {
+  const [adminUsername, setAdminUsername] = useState('');
+  const [adminPass, setAdminPass] = useState('');
   const [numPlayers, setNumPlayers] = useState('');
-  const [gameCode, setGameCode] = useState('');
+  const [gameCode, setGameCodeLocal] = useState('');
   const [playerName, setPlayerName] = useState('');
-  const [playerSurname, setPlayerSurname] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const socket = useSocket()
 
   const handleStartGame = () => {
-    if (adminName && adminSurname && numPlayers) {
-      const newGameCode = generateGameCode();
-      onCreateGame({ adminName, adminSurname, numPlayers, gameCode: newGameCode });
-      setErrorMessage('');
+    if (!adminUsername || !adminPass || !numPlayers) {
+      setErrorMessage("Molimo ispunite sva polja za kreiranje igre.");
+      return;
     }
+    const newGameCode = generateGameCode();
+    onCreateGame({ adminUsername, adminPass, numPlayers, gameCode: newGameCode })
+      .then(() => setErrorMessage(''))
+      .catch(() => setErrorMessage("Greška pri kreiranju igre."));
   };
 
-  const handleJoinGame = () => {
-    if (gameCode && playerName && playerSurname) {
-      const exists = onJoinGame({ gameCode, playerName: `${playerName} ${playerSurname}` });
-      if (exists) {
-        setErrorMessage('');
-      } else {
-        setErrorMessage("Šifra igre je neispravna.");
+  const handleJoinGame = async () => {
+    if (gameCode && playerName) {
+      try {
+        const response = await fetch(`/api/join-game/${gameCode}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(playerName),
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          setPlayers(result.players);
+          setGameCode(result.game_code);
+          setAdminName(result.teacher_name);
+
+          if (socket) {
+            socket.emit('joinGame', { game_code: result.game_code, player_name: playerName });
+          } else {
+            console.error("Socket not initialized");
+          }
+        } else {
+          alert(result.message);
+        }
+      } catch (error) {
+        console.error('Error joining game:', error);
       }
-      setPlayerName('');
-      setPlayerSurname('');
     } else {
       setErrorMessage("Unesite šifru igre i vaše ime i prezime.");
     }
@@ -46,15 +67,15 @@ const Home = ({ onCreateGame, onJoinGame }) => {
         <h2>Kreiraj igru</h2>
         <input 
           type="text" 
-          placeholder="Ime admina" 
-          value={adminName} 
-          onChange={(e) => setAdminName(e.target.value)} 
+          placeholder="Username admina" 
+          value={adminUsername} 
+          onChange={(e) => setAdminUsername(e.target.value)} 
         />
         <input 
           type="text" 
-          placeholder="Prezime admina" 
-          value={adminSurname} 
-          onChange={(e) => setAdminSurname(e.target.value)} 
+          placeholder="Password admina" 
+          value={adminPass} 
+          onChange={(e) => setAdminPass(e.target.value)} 
         />
         <input 
           type="number" 
@@ -70,19 +91,13 @@ const Home = ({ onCreateGame, onJoinGame }) => {
           type="text" 
           placeholder="Šifra igre" 
           value={gameCode} 
-          onChange={(e) => setGameCode(e.target.value)} 
+          onChange={(e) => setGameCodeLocal(e.target.value)} 
         />
         <input 
           type="text" 
           placeholder="Ime igrača" 
           value={playerName} 
           onChange={(e) => setPlayerName(e.target.value)} 
-        />
-        <input 
-          type="text" 
-          placeholder="Prezime igrača" 
-          value={playerSurname} 
-          onChange={(e) => setPlayerSurname(e.target.value)} 
         />
         <button onClick={handleJoinGame}>Start</button>
       </div>
