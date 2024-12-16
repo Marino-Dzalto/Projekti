@@ -121,12 +121,12 @@ button:focus {
   outline: 2px dashed #d2b4ff;
 }
 
-.player-list {
-  border: 1px solid #b39ddb;
+.player-lista {
+  border: 1px solid #d9b3ff;
   padding: 10px;
   border-radius: 8px;
-  width: 80%;
-  background-color: #f0e6ff;
+  width: 60%;
+  background-color: #d9b3ff;
   z-index: 2;
   margin-top: 20px;
 }

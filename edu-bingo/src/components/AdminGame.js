@@ -165,7 +165,7 @@ const AdminGame = ({ adminData }) => {
             {isGameLocked ? 'Igra zaključana' : 'Zaključaj igru'}
           </button>
         </div>
-        <div className="player-list">
+        <div className="player-lista">
           <h2>Igrači:</h2>
           <ul>
             {playerList.length > 0 ? (
