@@ -80,7 +80,7 @@ const Home = ({ onCreateGame, setPlayers, setGameCode, setAdminName}) => {
         <i className="fas fa-graduation-cap"></i> EduBingo
       </h1>
       {errorMessage && <p className="error">{errorMessage}</p>}
-      <div className="card">
+      <div className="field">
         <h2><i className="fas fa-cogs"></i> Kreiraj igru</h2>
         <input
           type="text"
@@ -104,7 +104,7 @@ const Home = ({ onCreateGame, setPlayers, setGameCode, setAdminName}) => {
           <i className="fas fa-play"></i> Start Game
         </button>
       </div>
-      <div className="card">
+      <div className="field">
         <h2><i className="fas fa-sign-in-alt"></i> Pridruži se igri</h2>
         <input
           type="text"

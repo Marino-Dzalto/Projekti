@@ -101,7 +101,7 @@ button:focus {
   z-index: 3;
 }
 
-.card {
+.field {
   background: linear-gradient(145deg, #ffffff, #f0e5ff);
   border-radius: 16px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
@@ -116,12 +116,12 @@ button:focus {
   z-index: 3;
 }
 
-.card h2 {
+.field h2 {
   font-size: 1.5rem;
   margin-bottom: 10px;
 }
 
-.card button {
+.field button {
   align-self: flex-end;
   margin-top: 10px;
 }
