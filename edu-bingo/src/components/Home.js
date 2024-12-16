@@ -1,6 +1,10 @@
 // src/components/Home.js
 
 import React, { useState } from 'react';
+import '@fortawesome/fontawesome-free/css/all.min.css';
+import mickey from "../mickey.png";
+import minnie from "../minnie.png";
+
 import { useSocket } from '../SocketContext';
 
 const Home = ({ onCreateGame, setPlayers, setGameCode, setAdminName}) => {
@@ -61,46 +65,74 @@ const Home = ({ onCreateGame, setPlayers, setGameCode, setAdminName}) => {
 
   return (
     <div className="home">
-      <h1>EduBingo</h1>
+      <div className="clouds">
+        <div className="cloud"><i className="fas fa-cloud"></i></div>
+        <div className="cloud"><i className="fas fa-cloud"></i></div>
+        <div className="cloud"><i className="fas fa-cloud"></i></div>
+        <div className="cloud"><i className="fas fa-cloud"></i></div>
+        <div className="cloud"><i className="fas fa-cloud"></i></div>
+        <div className="cloud"><i className="fas fa-cloud"></i></div>
+        <div className="cloud"><i className="fas fa-cloud"></i></div>
+        <div className="cloud"><i className="fas fa-cloud"></i></div>
+        <div className="cloud"><i className="fas fa-cloud"></i></div>
+      </div>
+      <h1 className="title">
+        <i className="fas fa-graduation-cap"></i> EduBingo
+      </h1>
       {errorMessage && <p className="error">{errorMessage}</p>}
-      <div className="admin-info">
-        <h2>Kreiraj igru</h2>
-        <input 
-          type="text" 
-          placeholder="Username admina" 
-          value={adminUsername} 
-          onChange={(e) => setAdminUsername(e.target.value)} 
+      <div className="card">
+        <h2><i className="fas fa-cogs"></i> Kreiraj igru</h2>
+        <input
+          type="text"
+          placeholder="Username admina"
+          value={adminUsername}
+          onChange={(e) => setAdminUsername(e.target.value)}
         />
-        <input 
-          type="text" 
-          placeholder="Password admina" 
-          value={adminPass} 
-          onChange={(e) => setAdminPass(e.target.value)} 
+        <input
+          type="text"
+          placeholder="Password admina"
+          value={adminPass}
+          onChange={(e) => setAdminPass(e.target.value)}
         />
-        <input 
-          type="number" 
-          placeholder="Broj igrača" 
-          value={numPlayers} 
-          onChange={(e) => setNumPlayers(e.target.value)} 
+        <input
+          type="number"
+          placeholder="Broj igrača"
+          value={numPlayers}
+          onChange={(e) => setNumPlayers(e.target.value)}
         />
-        <button onClick={handleStartGame}>Start Game</button>
+        <button onClick={handleStartGame}>
+          <i className="fas fa-play"></i> Start Game
+        </button>
       </div>
-      <div className="join-game">
-        <h2>Pridruži se igri</h2>
-        <input 
-          type="text" 
-          placeholder="Šifra igre" 
-          value={gameCode} 
-          onChange={(e) => setGameCodeLocal(e.target.value)} 
+      <div className="card">
+        <h2><i className="fas fa-sign-in-alt"></i> Pridruži se igri</h2>
+        <input
+          type="text"
+          placeholder="Šifra igre"
+          value={gameCode}
+          onChange={(e) => setGameCodeLocal(e.target.value)}
         />
-        <input 
-          type="text" 
-          placeholder="Ime igrača" 
-          value={playerName} 
-          onChange={(e) => setPlayerName(e.target.value)} 
+        <input
+          type="text"
+          placeholder="Ime igrača"
+          value={playerName}
+          onChange={(e) => setPlayerName(e.target.value)}
         />
-        <button onClick={handleJoinGame}>Start</button>
+        <button onClick={handleJoinGame}>
+          <i className="fas fa-sign-in-alt"></i> Join Game
+        </button>
       </div>
+      {/* Mickey and Minnie */}
+      <div className = "character">
+        <div className="minnie">
+            <img src={minnie} alt="Minnie pic"/>
+        </div>
+        <div className="mickey">
+            <img src={mickey} alt="Mickey pic"/>
+        </div>
+        
+      </div>
+      
     </div>
   );
 };

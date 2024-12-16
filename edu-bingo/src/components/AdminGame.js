@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useSocket } from '../SocketContext';
 import '../styles/AdminGame.css';
+import '@fortawesome/fontawesome-free/css/all.min.css';
 
 const AdminGame = ({ adminData }) => {
   const [playerList, setPlayerList] = useState([]);
@@ -109,62 +110,75 @@ const AdminGame = ({ adminData }) => {
 
   return (
     <div className="admin-game">
-      <h1>EduBingo</h1>
-      <div className="game-setup">
-        <label>
-          Predmet:
-          <select value={selectedSubject.name} onChange={(e) => {
-            const selected = subjects.find(s => s.name === e.target.value)
-            setSelectedSubject(selected);
-            }}
-          >
-            <option value="">Izaberite predmet</option>
-            {subjects.map((subj) => (
-              <option key={subj.subject_id} value={subj.name}>{subj.name}</option>
-            ))}
-          </select>
-        </label>
-
-        <label>
-          Tema:
-          <select
-            value={selectedTopic.name}
-            onChange={(e) => {
-              const selected = topics.find(t => t.name === e.target.value)
-              setSelectedTopic(selected)
-            }}
-            disabled={!selectedSubject}
-          >
-            <option value="">Izaberite temu</option>
-            {topics
-              .filter((t) => t.subject_id === selectedSubject.subject_id)
-              .map((top) => (
-                <option key={top.topic_id} value={top.name}>{top.name}</option>
+      <div className="clouds">
+        <div className="cloud"><i className="fas fa-cloud"></i></div>
+        <div className="cloud"><i className="fas fa-cloud"></i></div>
+        <div className="cloud"><i className="fas fa-cloud"></i></div>
+        <div className="cloud"><i className="fas fa-cloud"></i></div>
+        <div className="cloud"><i className="fas fa-cloud"></i></div>
+        <div className="cloud"><i className="fas fa-cloud"></i></div>
+        <div className="cloud"><i className="fas fa-cloud"></i></div>
+        <div className="cloud"><i className="fas fa-cloud"></i></div>
+      </div>
+      <div className="tijelo">
+        <h1><i className="fas fa-graduation-cap"></i>EduBingo</h1>
+        <div className="game-setup">
+          <label>
+            Predmet:
+            <select value={selectedSubject.name} onChange={(e) => {
+              const selected = subjects.find(s => s.name === e.target.value)
+              setSelectedSubject(selected);
+              }}
+            >
+              <option value="">Izaberite predmet</option>
+              {subjects.map((subj) => (
+                <option key={subj.subject_id} value={subj.name}>{subj.name}</option>
               ))}
-          </select>
-        </label>
+            </select>
+          </label>
 
-        <button onClick={handleCreateGame}>Pokreni igru</button>
-      </div>
+          <label>
+            Tema:
+            <select
+              value={selectedTopic.name}
+              onChange={(e) => {
+                const selected = topics.find(t => t.name === e.target.value)
+                setSelectedTopic(selected)
+              }}
+              disabled={!selectedSubject}
+            >
+              <option value="">Izaberite temu</option>
+              {topics
+                .filter((t) => t.subject_id === selectedSubject.subject_id)
+                .map((top) => (
+                  <option key={top.topic_id} value={top.name}>{top.name}</option>
+                ))}
+            </select>
+          </label>
 
-      <div className="game-code">
-        <h2>Šifra igre: {adminData.game_code}</h2>
-        <button onClick={handleLockGame} disabled={isGameLocked}>
-          {isGameLocked ? 'Igra zaključana' : 'Zaključaj igru'}
-        </button>
+            <button onClick={handleCreateGame}>Pokreni igru</button>
+          </div>
+
+        <div className="game-code">
+          <h2>Šifra igre: {adminData.game_code}</h2>
+          <button onClick={handleLockGame} disabled={isGameLocked}>
+            {isGameLocked ? 'Igra zaključana' : 'Zaključaj igru'}
+          </button>
+        </div>
+        <div className="player-list">
+          <h2>Igrači:</h2>
+          <ul>
+            {playerList.length > 0 ? (
+              playerList.map((player, index) => (
+                <li key={index}>{player.name || player}</li>
+              ))
+            ) : (
+              <li>Nema igrača u igri.</li>
+            )}
+          </ul>
+        </div>
       </div>
-      <div className="player-list">
-        <h2>Igrači:</h2>
-        <ul>
-          {playerList.length > 0 ? (
-            playerList.map((player, index) => (
-              <li key={index}>{player.name || player}</li>
-            ))
-          ) : (
-            <li>Nema igrača u igri.</li>
-          )}
-        </ul>
-      </div>
+      
     </div>
   );
 };

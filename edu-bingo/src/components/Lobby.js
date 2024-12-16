@@ -1,6 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useSocket } from '../SocketContext';
 import '../styles/Lobby.css'; // Uključite CSS datoteku za stilizaciju
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+
+// Import specific icons
+import { faClock, faKey, faUser, faUsers, faLock, faComments, faPaperPlane } from '@fortawesome/free-solid-svg-icons';
 
 const Lobby = ({ gameCode, adminName, players, isGameLocked }) => {
   const [timer, setTimer] = useState(0);
@@ -64,22 +68,22 @@ const Lobby = ({ gameCode, adminName, players, isGameLocked }) => {
       <div className="header">
         <h1>Lobby</h1>
         <div className="current-time">
-          <h2>{currentTime.toLocaleTimeString()}</h2>
+          <h2><FontAwesomeIcon icon={faClock} />{currentTime.toLocaleTimeString()}</h2>
         </div>
       </div>
       <div className="lobby-info">
-        <h2>Šifra igre: {gameCode}</h2>
-        <h3>Admin: {adminName}</h3>
-        <div className="timer">Vrijeme u lobby-u: {timer} sekundi</div>
-        {isGameLocked && <p className="locked-message">Igra je zaključana. Nema novih igrača.</p>}
+        <h2> <FontAwesomeIcon icon={faKey} /> Šifra igre:  <span className="highlight">{gameCode}</span></h2>
+        <h3><FontAwesomeIcon icon={faUser} /> Admin: {adminName}</h3>
+        <div className="timer"> <FontAwesomeIcon icon={faClock} /> Vrijeme u lobby-u: {timer} sekundi</div>
+        {isGameLocked && <p className="locked-message"><FontAwesomeIcon icon={faLock} /> Igra je zaključana. Nema novih igrača.</p>}
       </div>
       <div className="main-content">
         <div className="player-list">
-          <h3>Igrači:</h3>
+          <h3> <FontAwesomeIcon icon={faUsers} /> Igrači:</h3>
           <ul>
             {updatedPlayers.length > 0 ? (
               updatedPlayers.map((player, index) => (
-                <li key={index}>{player.name || player}</li>
+                <li key={index}> <FontAwesomeIcon icon={faUser} /> {player.name || player}</li>
               ))
             ) : (
               <li>Nema igrača u igri.</li>
@@ -87,7 +91,7 @@ const Lobby = ({ gameCode, adminName, players, isGameLocked }) => {
           </ul>
         </div>
         <div className="chat">
-          <h3>Chat</h3>
+          <h3><FontAwesomeIcon icon={faComments} /> Chat</h3>
           <div className="chat-window" ref={chatWindowRef}>
             {chat.map((item, index) => (
               <div className="message-box" key={index}>
@@ -103,7 +107,7 @@ const Lobby = ({ gameCode, adminName, players, isGameLocked }) => {
               onChange={(e) => setChatMessage(e.target.value)}
               placeholder="Unesite poruku..."
             />
-            <button type="submit">Pošalji</button>
+            <button type="submit"> <FontAwesomeIcon icon={faPaperPlane} /> Pošalji</button>
           </form>
         </div>
       </div>
