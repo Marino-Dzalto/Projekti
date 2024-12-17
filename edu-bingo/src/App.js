@@ -1,11 +1,12 @@
 // src/App.js
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.css';
 import AdminGame from './components/AdminGame';
 import GameBoard from './components/GameBoard';
 import Home from './components/Home';
 import Lobby from './components/Lobby';
+import Leaderboard from './components/Leaderboard';
 import { SocketProvider } from './SocketContext';
 
 const App = () => {
@@ -15,6 +16,8 @@ const App = () => {
   const [players, setPlayers] = useState(null);  // gdje ćemo storeat igrače
   const [isGameLocked, setIsGameLocked] = useState(false); // je li soba zaključana/otključana
   const [isGameStarted, setIsGameStarted] = useState(false); //je li igra započela ili smo još u lobbyu
+  const [showLeaderboard, setShowLeaderboard] = useState(false); //pokazivanje leaderboarda
+  const [scores, setScores] = useState([]);
 
   const handleCreateGame = async (data) => {
     try {
@@ -55,17 +58,68 @@ const App = () => {
     setIsGameStarted(false);
   };
 
+  // Fetch leaderboard data from the backend
+  const fetchLeaderboard = async (gameCode) => {
+    try {
+      const response = await fetch(`/api/leaderboard/${gameCode}`);
+      if (!response.ok) {
+        throw new Error(`Error fetching leaderboard: ${response.statusText}`);
+      }
+      const data = await response.json();
+
+      // Update players and scores
+      setPlayers(data.map((player) => ({ name: player.name })));
+      setScores(data.map((player) => player.score));
+      setShowLeaderboard(true);
+    } catch (error) {
+      console.error("Failed to fetch leaderboard:", error);
+    }
+  };
+
+  const handleEndGame = () => {
+    setIsGameStarted(false);
+    fetchLeaderboard(gameCode);
+  };
+
+  useEffect(() => {
+    // Da bismo testirali pojedinu stranicu samo uncommentaj pojedini dio
+    // AdminGame
+    //setAdminData({ roomId: '123', roomName: 'Test Room' });
+
+    // Lobby
+    //setGameCode('123');
+    //setPlayers([{ name: 'Player1' }, { name: 'Player2' }]);
+
+    // GameBoard
+    //setIsGameStarted(true);
+    //setPlayers([{ name: 'Player1' }, { name: 'Player2' }]);
+    //setGameCode('123');
+
+
+    // Leaderboard
+    //  setPlayers([
+    //  { name: 'Player1' },
+    //  { name: 'Player2' },
+    //  { name: 'Player3' },]);
+    //setShowLeaderboard(true);
+    //setScores([100, 90, 80]);
+
+    //Home
+  }, []);
+
   return (
     <SocketProvider>
       <div className="App">
         {isGameStarted ? (
           // Ako je igra krenula idemo na GameBoard
-          <GameBoard players={players} gameCode={gameCode} />
+          <GameBoard players={players} gameCode={gameCode} onEndGame={handleEndGame} />
         ) : adminData ? (
           // Ako adminData imamo, a Game code jos ne onda mi pokaži AdminGame(teacher dio)
           <AdminGame
             adminData={adminData}
           />
+        ) : showLeaderboard ? (
+          <Leaderboard players={players} scores={scores} />
         ) : players ? (
           // Ako je izgeneriran code, ali igra još nije krenla onda smo još u Lobbyu
           <Lobby
