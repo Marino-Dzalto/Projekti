@@ -58,7 +58,7 @@ const App = () => {
     setIsGameStarted(false);
   };
 
-  // Fetch leaderboard data from the backend
+  // Fetchanje leaderboarda sa backenda
   const fetchLeaderboard = async (gameCode) => {
     try {
       const response = await fetch(`/api/leaderboard/${gameCode}`);
@@ -67,7 +67,6 @@ const App = () => {
       }
       const data = await response.json();
 
-      // Update players and scores
       setPlayers(data.map((player) => ({ name: player.name })));
       setScores(data.map((player) => player.score));
       setShowLeaderboard(true);
