@@ -1,9 +1,11 @@
 import os
+import bcrypt
+import base64
 from datetime import datetime
 from dotenv import load_dotenv
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from flask_socketio import SocketIO, emit, join_room, leave_room, send
+from flask_socketio import SocketIO, emit, join_room, leave_room
 from db_models import (
     db,
     Task,
@@ -34,15 +36,18 @@ socketio = SocketIO(app, cors_allowed_origins="*")
 @app.post("/api/verify-teacher")
 def verify_teacher():
     data = request.get_json()
-    name = data["adminUsername"]
+    username = data["adminUsername"]
     password = data["adminPass"]
 
-    teacher = Teacher.query.filter_by(name=name, password=password).first()
+    teacher = Teacher.query.filter_by(username=username).first()
 
     if not teacher:
-        return {"message": "Teacher not found"}, 404
+        return {"message": "Teacher username not found"}, 404
 
-    return {"teacher_id": str(teacher.teacher_id)}, 200
+    if verify_password(password, teacher.password):
+        return {"teacher_id": str(teacher.teacher_id)}, 200
+    else:
+        return {"message": "Invalid password"}, 401
 
 
 @app.post("/api/create-game")
@@ -118,7 +123,7 @@ def join_game(code):
                 "players": players_arr,
                 "game_id": str(game.game_id),
                 "game_code": game.game_code,
-                "teacher_name": teacher.name,
+                "teacher_name": teacher.username,
             }
         ),
         200,
@@ -283,6 +288,19 @@ def handle_chat_message(data):
             {"message": message, "timestamp": timestamp},
             room=str(game.game_id),
         )
+
+
+def hash_password(password):
+    salt = bcrypt.gensalt()
+    hashed = bcrypt.hashpw(password.encode("utf-8"), salt)
+
+    return base64.b64encode(hashed).decode("utf-8")
+
+
+def verify_password(provided, hashed):
+    hashed_bytes = base64.b64decode(hashed)
+
+    return bcrypt.checkpw(provided.encode("utf-8"), hashed_bytes)
 
 
 if __name__ == "__main__":

@@ -85,8 +85,8 @@ class Teacher(db.Model):
     teacher_id = Column(
         UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")
     )
-    name = Column(String(25), nullable=False)
-    email = Column(String(50), nullable=False)
+    username = Column(String(25), nullable=False, unique=True)
+    email = Column(String(50), nullable=False, unique=True)
     password = Column(String(100), nullable=False)
     date_registered = Column(DateTime, server_default=text("now()"))
 
