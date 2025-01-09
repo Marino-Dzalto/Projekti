@@ -1,9 +1,9 @@
 // src/components/AdminGame.js
 
+import '@fortawesome/fontawesome-free/css/all.min.css';
 import React, { useEffect, useState } from 'react';
 import { useSocket } from '../SocketContext';
 import '../styles/AdminGame.css';
-import '@fortawesome/fontawesome-free/css/all.min.css';
 
 const AdminGame = ({ adminData }) => {
   const [playerList, setPlayerList] = useState([]);

@@ -1,10 +1,10 @@
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { useEffect, useRef, useState } from 'react';
 import { useSocket } from '../SocketContext';
 import '../styles/Lobby.css'; // Uključite CSS datoteku za stilizaciju
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 // Import specific icons
-import { faClock, faKey, faUser, faUsers, faLock, faComments, faPaperPlane } from '@fortawesome/free-solid-svg-icons';
+import { faClock, faComments, faKey, faLock, faPaperPlane, faUser, faUsers } from '@fortawesome/free-solid-svg-icons';
 
 const Lobby = ({ gameCode, adminName, players, isGameLocked }) => {
   const [timer, setTimer] = useState(0);

@@ -6,6 +6,8 @@ from dotenv import load_dotenv
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from flask_socketio import SocketIO, emit, join_room, leave_room
+from sqlalchemy.sql.expression import func
+from sqlalchemy.orm import aliased
 from db_models import (
     db,
     Task,
@@ -158,6 +160,25 @@ def lock_room(game_id):
     return {"game_id": str(game.game_id), "message": "Game locked"}, 200
 
 
+@app.get("/api/leaderboard/<string:game_id>")
+def leaderboard(game_id):
+    score_sums = (
+        db.session.query(Student.username, func.sum(Score.score).label("total_score"))
+        .join(Score, Score.temp_user_id == Student.temp_student_id)
+        .filter(Score.game_id == game_id)
+        .group_by(Student.username)
+        .order_by(func.sum(Score.score).desc())
+        .all()
+    )
+
+    return {
+        "leaderboard": [
+            {"username": row.username, "total_score": row.total_score}
+            for row in score_sums
+        ]
+    }, 200
+
+
 @app.get("/api/players/<string:game_id>")
 def get_players(game_id):
     players = Student.query.filter(
@@ -234,6 +255,41 @@ def handle_leave_game(data):
     ...
 
 
+@socketio.on("startGame")
+def handle_start_game(data):
+    room_id = data["room_id"]
+    topic_id = data["selectedTopic"]["topic_id"]
+    clients = list(socketio.server.manager.rooms["/"].get(room_id, {}).keys())
+
+    for client in clients[1:]:
+        emit(
+            "receiveQuestions",
+            {"questions": generateQuestions(topic_id), "game_id": room_id},
+            to=client,
+        )
+
+
+@socketio.on("playerAnswered")
+def handle_player_answered(data):
+    player_sid = request.sid
+    game_id = data["game_id"]
+    task_id = data["task_id"]
+    score = data["score"]
+
+    student = Student.query.filter_by(socket_id=player_sid).first()
+
+    if student:
+        new_score = Score(
+            game_id=game_id,
+            temp_user_id=student.temp_student_id,
+            task_id=task_id,
+            score=score,
+        )
+
+        db.session.add(new_score)
+        db.session.commit()
+
+
 @socketio.on("updatePlayers")
 def handle_update_players(data):
     game_id = data["game_id"]
@@ -288,6 +344,57 @@ def handle_chat_message(data):
             {"message": message, "timestamp": timestamp},
             room=str(game.game_id),
         )
+
+
+def generateQuestions(topic_id):
+    if topic_id:
+        written_ans = aliased(WrittenAnswer)
+        numerical_ans = aliased(NumericalAnswer)
+        mc_ans = aliased(MultipleChoiceAnswer)
+
+        sample = (
+            db.session.query(Task, written_ans, numerical_ans, mc_ans)
+            .filter(Task.topic_id == topic_id)
+            .outerjoin(written_ans, Task.task_id == written_ans.task_id)
+            .outerjoin(numerical_ans, Task.task_id == numerical_ans.task_id)
+            .outerjoin(mc_ans, Task.task_id == mc_ans.task_id)
+            .order_by(func.random())
+            .limit(9)
+            .all()
+        )
+
+        ret = []
+
+        for task, written_data, numerical_data, mc_data in sample:
+            obj = {
+                "task_id": str(task.task_id),
+                "question": task.question,
+                "difficulty": task.difficulty,
+                "answer": {},
+            }
+
+            if written_data:
+                obj["answer"] = {
+                    "type": "written",
+                    "correct_answer": written_data.correct_answer,
+                }
+            elif numerical_data:
+                obj["answer"] = {
+                    "type": "numerical",
+                    "correct_answer": numerical_data.correct_answer,
+                }
+            else:
+                obj["answer"] = {
+                    "type": "multiple choice",
+                    "option_a": mc_data.option_a,
+                    "option_b": mc_data.option_b,
+                    "option_c": mc_data.option_c,
+                    "correct_answer": mc_data.correct_answer,
+                }
+
+            ret.append(obj)
+
+    return ret
 
 
 def hash_password(password):

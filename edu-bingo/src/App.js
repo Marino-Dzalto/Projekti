@@ -1,12 +1,12 @@
 // src/App.js
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import './App.css';
 import AdminGame from './components/AdminGame';
 import GameBoard from './components/GameBoard';
 import Home from './components/Home';
-import Lobby from './components/Lobby';
 import Leaderboard from './components/Leaderboard';
+import Lobby from './components/Lobby';
 import { SocketProvider } from './SocketContext';
 
 const App = () => {

@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import '../styles/GameBoard.css';
+import React, { useEffect, useState } from 'react';
 import mickey from "../mickey.png";
 import minnie from "../minnie.png";
+import '../styles/GameBoard.css';
 
 const GameBoard = () => {
   const [cards, setCards] = useState([]);
