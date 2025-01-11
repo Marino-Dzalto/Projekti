@@ -18,7 +18,7 @@ const App = () => {
   const [isGameStarted, setIsGameStarted] = useState(false); //je li igra započela ili smo još u lobbyu
   const [showLeaderboard, setShowLeaderboard] = useState(false); //pokazivanje leaderboarda
   const [scores, setScores] = useState([]);
-  const [questions, setQuestions] = useState([]);
+  const [questionData, setQuestionData] = useState([]);
 
   const handleCreateGame = async (data) => {
     try {
@@ -77,7 +77,7 @@ const App = () => {
   };
 
   const handleStartGame = (data) => {
-    setQuestions(data.questions);
+    setQuestionData(data);
     setIsGameStarted(true);
   }
 
@@ -117,7 +117,7 @@ const App = () => {
       <div className="App">
         {isGameStarted ? (
           // Ako je igra krenula idemo na GameBoard
-          <GameBoard players={players} gameCode={gameCode} questions={questions} onEndGame={handleEndGame} />
+          <GameBoard players={players} gameCode={gameCode} questionData={questionData} onEndGame={handleEndGame} />
         ) : adminData ? (
           // Ako adminData imamo, a Game code jos ne onda mi pokaži AdminGame(teacher dio)
           <AdminGame

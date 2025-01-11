@@ -7,7 +7,6 @@ import '../styles/AdminGame.css';
 
 const AdminGame = ({ adminData }) => {
   const [playerList, setPlayerList] = useState([]);
-  const [isGameLocked, setIsGameLocked] = useState(false);
   const [subjects, setSubjects] = useState([]);// predmeti s backenda
   const [selectedSubject, setSelectedSubject] = useState('');// trenutacni predmet
   const [topics, setTopics] = useState([]);// teme s backenda
@@ -73,15 +72,6 @@ const AdminGame = ({ adminData }) => {
     }
   }, [socket, adminData]);
 
-  const handleLockGame = async () => {
-    try {
-      await fetch(`/api/lock-room/${adminData.game_id}`, { method: 'POST' });
-      setIsGameLocked(true);
-    } catch (error) {
-      console.error('Error locking game room:', error);
-    }
-  };
-
    // Handle game creation nakon sta izaberemo temu i predmet
    const handleCreateGame = async () => {
     if (!selectedSubject || !selectedTopic) {
@@ -90,15 +80,22 @@ const AdminGame = ({ adminData }) => {
     }
 
     try {
-      const response = await fetch(`/api/set-topic/${adminData.game_id}`, {
+      const setTopicResponse = await fetch(`/api/set-topic/${adminData.game_id}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ subject: selectedSubject, topic: selectedTopic, gameCode: adminData.game_code })
+        body: JSON.stringify({ topic: selectedTopic })
       });
 
-      if (response.ok) {
+      if (!setTopicResponse.ok) {
+        console.error('Greška pri postavljanju teme');
+        return;
+      }
+
+      const lockGameResponse =  await fetch(`/api/lock-room/${adminData.game_id}`, { method: 'POST' });
+
+      if (lockGameResponse.ok) {
         console.log('Igra je uspješno napravljena');
         socket.emit("startGame", {
           room_id: adminData.game_id,
@@ -165,9 +162,6 @@ const AdminGame = ({ adminData }) => {
 
         <div className="game-code">
           <h2>Šifra igre: {adminData.game_code}</h2>
-          <button onClick={handleLockGame} disabled={isGameLocked}>
-            {isGameLocked ? 'Igra zaključana' : 'Zaključaj igru'}
-          </button>
         </div>
         <div className="player-lista">
           <h2>Igrači:</h2>

@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import mickey from "../mickey.png";
 import minnie from "../minnie.png";
+import { useSocket } from '../SocketContext';
 import '../styles/GameBoard.css';
 
-const GameBoard = ({questions }) => {
+const GameBoard = ({ questionData }) => {
   const [cards, setCards] = useState([]);
   const [randomNumber, setRandomNumber] = useState(null);
   const [selectedCardIndex, setSelectedCardIndex] = useState(null);
   const [answer, setAnswer] = useState('');
   const [score, setScore] = useState(0);
+  const socket = useSocket();
 
   //izgeneriramo 9 jedinstvenih brojeva
   const generateUniqueCardNumbers = (count) => {
@@ -23,24 +25,41 @@ const GameBoard = ({questions }) => {
   useEffect(() => {
     const uniqueCardNumbers = generateUniqueCardNumbers(9);
 
-    const initialCards = questions.slice(0, 9).map((question, index) => ({
+    const initialCards = questionData.questions.slice(0, 9).map((question, index) => ({
       id: index,
+      task_id: question.task_id,
       number: uniqueCardNumbers[index],
       task: question,
-      flipped: false,
-      points: question.difficulty === 'high' ? 3 : 1,
+      flipped: false
     }));
 
     setCards(initialCards);
-  }, [questions]);
+  }, [questionData]);
 
   const generateRandomNumber = () => {
     setRandomNumber(Math.floor(Math.random() * 90) + 1);
   };
 
   useEffect(() => {
-    console.log(questions);
-  });
+    if (socket) {
+      const handleNewQuestion = (data) => {
+        const new_q = data.new_question;
+        const old_q = data.old_question;
+
+        const updatedCards = cards.map((card) => 
+          card.task_id === old_q ? { ...card, task_id: new_q.task_id, task: new_q } : card
+        );
+
+        setCards(updatedCards);
+      };
+
+      socket.on('receiveNewQuestion', handleNewQuestion);
+
+      return () => {
+        socket.off('receiveNewQuestion', handleNewQuestion);
+      };
+    }
+  }, [cards, socket]);
 
   // kad igrač odgovori
   const handleSubmitAnswer = () => {
@@ -74,6 +93,14 @@ const GameBoard = ({questions }) => {
           i === selectedCardIndex ? { ...c, completed: true } : c
         )
       );
+
+      if (socket) {
+        socket.emit('playerAnswered', { task_id: card.task_id, game_id: questionData.game_id, score: points });
+      }
+    } else {
+      if (socket) {
+        socket.emit('changeQuestion', { task_id: card.task_id, game_id: questionData.game_id, topic_id: questionData.topic_id });
+      }
     }
 
     setAnswer('');

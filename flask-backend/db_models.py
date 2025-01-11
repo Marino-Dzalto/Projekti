@@ -105,7 +105,7 @@ class Game(db.Model):
     start_time = Column(DateTime, nullable=False)
     end_time = Column(DateTime, nullable=True)
     is_locked = Column(Boolean, nullable=False)
-    max_players = Column(Integer, nullable=False)
+    max_players = Column(Integer)
 
     teacher = relationship("Teacher")
     topic = relationship("Topic")

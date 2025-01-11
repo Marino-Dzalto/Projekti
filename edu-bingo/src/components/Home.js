@@ -1,7 +1,7 @@
 // src/components/Home.js
 
-import React, { useState } from 'react';
 import '@fortawesome/fontawesome-free/css/all.min.css';
+import React, { useState } from 'react';
 import mickey from "../mickey.png";
 import minnie from "../minnie.png";
 
@@ -10,19 +10,18 @@ import { useSocket } from '../SocketContext';
 const Home = ({ onCreateGame, setPlayers, setGameCode, setAdminName}) => {
   const [adminUsername, setAdminUsername] = useState('');
   const [adminPass, setAdminPass] = useState('');
-  const [numPlayers, setNumPlayers] = useState('');
   const [gameCode, setGameCodeLocal] = useState('');
   const [playerName, setPlayerName] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const socket = useSocket()
 
   const handleStartGame = () => {
-    if (!adminUsername || !adminPass || !numPlayers) {
+    if (!adminUsername || !adminPass) {
       setErrorMessage("Molimo ispunite sva polja za kreiranje igre.");
       return;
     }
     const newGameCode = generateGameCode();
-    onCreateGame({ adminUsername, adminPass, numPlayers, gameCode: newGameCode })
+    onCreateGame({ adminUsername, adminPass, gameCode: newGameCode })
       .then(() => setErrorMessage(''))
       .catch(() => setErrorMessage("Greška pri kreiranju igre."));
   };
@@ -93,12 +92,6 @@ const Home = ({ onCreateGame, setPlayers, setGameCode, setAdminName}) => {
           placeholder="Password admina"
           value={adminPass}
           onChange={(e) => setAdminPass(e.target.value)}
-        />
-        <input
-          type="number"
-          placeholder="Broj igrača"
-          value={numPlayers}
-          onChange={(e) => setNumPlayers(e.target.value)}
         />
         <button onClick={handleStartGame}>
           <i className="fas fa-play"></i> Start Game

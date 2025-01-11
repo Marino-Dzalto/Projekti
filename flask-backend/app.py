@@ -69,7 +69,6 @@ def create_game():
         game_code=data["data"]["gameCode"],
         start_time=datetime.now(),
         is_locked=False,
-        max_players=data["data"]["numPlayers"],
     )
 
     db.session.add(new_game)
@@ -91,15 +90,6 @@ def join_game(code):
 
     if not game:
         return {"message": "Game not found"}, 404
-
-    active_players_count = Student.query.filter(
-        Student.game_id == game.game_id,
-        Student.is_active == True,
-        Student.end_time.is_(None),
-    ).count()
-
-    if active_players_count >= game.max_players:
-        return {"message": "Game is full"}, 404
 
     new_student = Student(
         game_id=game.game_id,
@@ -141,7 +131,7 @@ def join_game(code):
 def set_topic(game_id):
     data = request.get_json()
 
-    game = Game.query.filter_by(game_id=game_id, game_code=data["gameCode"]).first()
+    game = Game.query.filter_by(game_id=game_id).first()
 
     if not game:
         return {"message": "No such game in database"}, 404
@@ -293,7 +283,11 @@ def handle_replace_question(data):
     idx = questions[room_id][client].index(task_id)
     questions[room_id][client][idx] = new_question["task_id"]
 
-    emit("receiveNewQuestion", {"new_question": new_question}, to=client)
+    emit(
+        "receiveNewQuestion",
+        {"new_question": new_question, "old_question": task_id},
+        to=client,
+    )
 
 
 @socketio.on("playerAnswered")

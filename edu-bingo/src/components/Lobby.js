@@ -52,7 +52,7 @@ const Lobby = ({ gameCode, adminName, players, isGameLocked, onStartGame }) => {
         socket.off("receiveQuestions", handleReceiveQuestions);
       };
     }
-  }, [socket]);
+  }, [onStartGame, socket]);
 
   useEffect(() => {
     if (chatWindowRef.current) {
