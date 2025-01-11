@@ -30,6 +30,7 @@
   margin: 0 auto;
   grid-template-columns: repeat(3, 100px);
   grid-gap: 50px;
+  z-index: 2;
 }
 
 .card {
@@ -89,7 +90,55 @@
   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
   text-align: center;
   position: relative;
+
 }
+
+.modal-content input {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  border: 2px solid #ccc;
+  border-radius: 5px;
+  font-size: 1em;
+  box-sizing: border-box;
+  margin-bottom: 15px;
+}
+
+.modal-content input:focus {
+  outline: none;
+  border-color: #6a0dad;
+}
+
+
+.options-container {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  align-items: center;
+  justify-content: center;
+}
+
+.option-box {
+  padding: 10px 20px;
+  border: 2px solid #ccc;
+  border-radius: 5px;
+  cursor: pointer;
+  background-color: #f9f9f9;
+  text-align: center;
+  transition: background-color 0.3s, border-color 0.3s;
+}
+
+.option-box:hover {
+  background-color: #f0f0f0;
+  border-color: #888;
+}
+
+.option-box.selected {
+  background-color: #d4eced;
+  border-color: #2883a7;
+}
+
 
 .close-button {
   position: absolute;
@@ -102,4 +151,5 @@
 
 .character {
   margin-bottom: 0px;
+  z-index: 1;
 }
