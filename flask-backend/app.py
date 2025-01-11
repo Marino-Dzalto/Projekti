@@ -23,16 +23,24 @@ from db_models import (
 )
 
 
+# Load environment variables
 load_dotenv()
+
+# Ensure DATABASE_URI is set in .env
+db_uri = os.getenv("DATABASE_URI")
+if not db_uri:
+    raise ValueError("DATABASE_URI not set in environment variables")
 
 app = Flask(__name__)
 CORS(app)
-app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URI")
+app.config["SQLALCHEMY_DATABASE_URI"] = db_uri
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db.init_app(app)
 
-socketio = SocketIO(app, cors_allowed_origins="*")
+socketio = SocketIO(app, cors_allowed_origins="*")  # Restrict CORS to a specific domain
+
+questions = {}
 
 
 @app.post("/api/verify-teacher")
@@ -84,16 +92,13 @@ def join_game(code):
     if not game:
         return {"message": "Game not found"}, 404
 
-    if (
-        len(
-            Student.query.filter(
-                Student.game_id == game.game_id,
-                Student.is_active == True,
-                Student.end_time.is_(None),
-            ).all()
-        )
-        >= game.max_players
-    ):
+    active_players_count = Student.query.filter(
+        Student.game_id == game.game_id,
+        Student.is_active == True,
+        Student.end_time.is_(None),
+    ).count()
+
+    if active_players_count >= game.max_players:
         return {"message": "Game is full"}, 404
 
     new_student = Student(
@@ -249,10 +254,11 @@ def handle_join_room(data):
     handle_update_players({"game_id": str(game.game_id)})
 
 
-@socketio.on("leaveGame")
+@socketio.on("endGame")
 def handle_leave_game(data):
-    # implementirati kad bude zatrebalo
-    ...
+    room_id = data["room_id"]
+
+    del questions[room_id]
 
 
 @socketio.on("startGame")
@@ -261,12 +267,33 @@ def handle_start_game(data):
     topic_id = data["selectedTopic"]["topic_id"]
     clients = list(socketio.server.manager.rooms["/"].get(room_id, {}).keys())
 
+    if room_id not in questions:
+        questions[room_id] = {}
+
     for client in clients[1:]:
+        user_questions = generate_questions(topic_id)
+        questions[room_id][client] = [task["task_id"] for task in user_questions]
+
         emit(
             "receiveQuestions",
-            {"questions": generateQuestions(topic_id), "game_id": room_id},
+            {"questions": user_questions, "game_id": room_id, "topic_id": topic_id},
             to=client,
         )
+
+
+@socketio.on("changeQuestion")
+def handle_replace_question(data):
+    room_id = data["game_id"]
+    task_id = data["task_id"]
+    topic_id = data["topic_id"]
+    client = request.sid
+
+    new_question = get_new_question(topic_id, questions[room_id][client])
+
+    idx = questions[room_id][client].index(task_id)
+    questions[room_id][client][idx] = new_question["task_id"]
+
+    emit("receiveNewQuestion", {"new_question": new_question}, to=client)
 
 
 @socketio.on("playerAnswered")
@@ -346,7 +373,7 @@ def handle_chat_message(data):
         )
 
 
-def generateQuestions(topic_id):
+def generate_questions(topic_id):
     if topic_id:
         written_ans = aliased(WrittenAnswer)
         numerical_ans = aliased(NumericalAnswer)
@@ -395,6 +422,52 @@ def generateQuestions(topic_id):
             ret.append(obj)
 
     return ret
+
+
+def get_new_question(topic_id, excluded_ids):
+    if topic_id:
+        written_ans = aliased(WrittenAnswer)
+        numerical_ans = aliased(NumericalAnswer)
+        mc_ans = aliased(MultipleChoiceAnswer)
+
+        new_task = (
+            db.session.query(Task, written_ans, numerical_ans, mc_ans)
+            .filter(Task.topic_id == topic_id)
+            .filter(~Task.task_id.in_(excluded_ids))
+            .outerjoin(written_ans, Task.task_id == written_ans.task_id)
+            .outerjoin(numerical_ans, Task.task_id == numerical_ans.task_id)
+            .outerjoin(mc_ans, Task.task_id == mc_ans.task_id)
+            .order_by(func.random())
+            .first()
+        )
+
+        obj = {
+            "task_id": str(new_task[0].task_id),
+            "question": new_task[0].question,
+            "difficulty": new_task[0].difficulty,
+            "answer": {},
+        }
+
+        if new_task[1]:
+            obj["answer"] = {
+                "type": "written",
+                "correct_answer": new_task[1].correct_answer,
+            }
+        elif new_task[2]:
+            obj["answer"] = {
+                "type": "numerical",
+                "correct_answer": new_task[2].correct_answer,
+            }
+        else:
+            obj["answer"] = {
+                "type": "multiple choice",
+                "option_a": new_task[3].option_a,
+                "option_b": new_task[3].option_b,
+                "option_c": new_task[3].option_c,
+                "correct_answer": new_task[3].correct_answer,
+            }
+
+        return obj
 
 
 def hash_password(password):
