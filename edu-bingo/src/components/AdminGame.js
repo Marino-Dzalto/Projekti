@@ -85,7 +85,7 @@ const AdminGame = ({ adminData }) => {
    // Handle game creation nakon sta izaberemo temu i predmet
    const handleCreateGame = async () => {
     if (!selectedSubject || !selectedTopic) {
-      alert('Please select both a subject and a topic.');
+      alert('Izaberite i predmet i temu!');
       return;
     }
 
@@ -100,6 +100,10 @@ const AdminGame = ({ adminData }) => {
 
       if (response.ok) {
         console.log('Igra je uspješno napravljena');
+        socket.emit("startGame", {
+          room_id: adminData.game_id,
+          selectedTopic,
+        });
       } else {
         console.error('Igra nije napravljena');
       }

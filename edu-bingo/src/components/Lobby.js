@@ -6,7 +6,7 @@ import '../styles/Lobby.css'; // Uključite CSS datoteku za stilizaciju
 // Import specific icons
 import { faClock, faComments, faKey, faLock, faPaperPlane, faUser, faUsers } from '@fortawesome/free-solid-svg-icons';
 
-const Lobby = ({ gameCode, adminName, players, isGameLocked }) => {
+const Lobby = ({ gameCode, adminName, players, isGameLocked, onStartGame }) => {
   const [timer, setTimer] = useState(0);
   const [chatMessage, setChatMessage] = useState('');
   const [chat, setChat] = useState([]);
@@ -38,12 +38,19 @@ const Lobby = ({ gameCode, adminName, players, isGameLocked }) => {
         }
       }
 
+      const handleReceiveQuestions = (data) => {
+        console.log("Questions received:", data.questions);
+        onStartGame();
+      };
+
       socket.on("updatePlayers", handleUpdatePlayers);
       socket.on("chatMessage", handleUpdateChat);
+      socket.on("receiveQuestions", handleReceiveQuestions);
 
       return () => {
         socket.off("updatePlayers", handleUpdatePlayers);
         socket.off("chatMessage", handleUpdateChat);
+        socket.off("receiveQuestions", handleReceiveQuestions);
       };
     }
   }, [socket]);

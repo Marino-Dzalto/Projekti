@@ -127,6 +127,7 @@ const App = () => {
             players={players}
             onLeaveLobby={handleLeaveLobby}
             isGameLocked={isGameLocked}
+            onStartGame={() => setIsGameStarted(true)}
           />
         ) : (
           // Pokaži index po defaultu
