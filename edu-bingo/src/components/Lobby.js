@@ -39,8 +39,7 @@ const Lobby = ({ gameCode, adminName, players, isGameLocked, onStartGame }) => {
       }
 
       const handleReceiveQuestions = (data) => {
-        console.log("Questions received:", data.questions);
-        onStartGame();
+        onStartGame(data);
       };
 
       socket.on("updatePlayers", handleUpdatePlayers);

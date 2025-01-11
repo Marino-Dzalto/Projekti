@@ -3,7 +3,7 @@ import mickey from "../mickey.png";
 import minnie from "../minnie.png";
 import '../styles/GameBoard.css';
 
-const GameBoard = () => {
+const GameBoard = ({ players, gameCode, questions, onEndGame }) => {
   const [cards, setCards] = useState([]);
   const [randomNumber, setRandomNumber] = useState(null);
   const [selectedCardIndex, setSelectedCardIndex] = useState(null);
@@ -11,7 +11,7 @@ const GameBoard = () => {
   const [score, setScore] = useState(0);
 
   // Fetch pitanja s backenda
-  useEffect(() => {
+  /* useEffect(() => {
     const fetchTasks = async () => {
       try {
         const response = await fetch('/api/tasks');
@@ -51,7 +51,11 @@ const GameBoard = () => {
     };
 
     fetchTasks();
-  }, []);
+  }, []); */
+  useEffect(() => {
+    console.log(questions);
+  });
+
   const generateRandomNumber = () => {
     setRandomNumber(Math.floor(Math.random() * 90) + 1);
   };
