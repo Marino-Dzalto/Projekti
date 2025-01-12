@@ -56,6 +56,18 @@
   transform: scale(1.05);
 }
 
+.icon-check {
+  font-size: 4.5rem;
+  color: rgba(0, 255, 21, 0.5);
+  width: 90%;
+  height: 90%;
+  margin-left: 5px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;
+}
+
 .card-content {
   display: flex;
   flex-direction: column;

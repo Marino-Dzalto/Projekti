@@ -3,6 +3,8 @@ import mickey from "../mickey.png";
 import minnie from "../minnie.png";
 import { useSocket } from '../SocketContext';
 import '../styles/GameBoard.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faXmark, faCheck } from '@fortawesome/free-solid-svg-icons';
 
 const GameBoard = ({ questionData }) => {
   const [cards, setCards] = useState([]);
@@ -127,7 +129,7 @@ const GameBoard = ({ questionData }) => {
             className={`card ${card.flipped ? 'flipped' : ''}`}
             onClick={() => setSelectedCardIndex(index)}
           >
-            <p>{card.completed ? 'Rješena kartica' : `Redni broj: ${card.number}`}</p>
+            <p>{card.completed ? <FontAwesomeIcon icon={faCheck} className="icon-check" /> : `Redni broj: ${card.number}`}</p>
           </div>
         ))}
       </div>
