@@ -4,7 +4,7 @@ import minnie from "../minnie.png";
 import { useSocket } from '../SocketContext';
 import '../styles/GameBoard.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faXmark, faCheck } from '@fortawesome/free-solid-svg-icons';
+import { faCheck } from '@fortawesome/free-solid-svg-icons';
 
 const GameBoard = ({ questionData }) => {
   const [cards, setCards] = useState([]);
@@ -12,6 +12,7 @@ const GameBoard = ({ questionData }) => {
   const [selectedCardIndex, setSelectedCardIndex] = useState(null);
   const [answer, setAnswer] = useState('');
   const [score, setScore] = useState(0);
+  const [scoreAnimation, setScoreAnimation] = useState(null);
   const socket = useSocket();
 
   //izgeneriramo 9 jedinstvenih brojeva
@@ -66,12 +67,17 @@ const GameBoard = ({ questionData }) => {
   // kad igrač odgovori
   const handleSubmitAnswer = () => {
     console.log(answer);
-    console.log(selectedCardIndex)
+    console.log(questionData)
     const card = cards[selectedCardIndex];
     if (!card) return;
 
+    const isCapsSensitive = questionData.topic_id === "56c3f768-8e47-456b-9d81-9a6eaf375940";
+
     const isCorrect =
-    (card.task.answer.type === 'written' && answer.toLowerCase() === card.task.answer.correct_answer.toLowerCase()) ||
+    card.task.answer.type === 'written' &&
+      (isCapsSensitive
+        ? answer === card.task.answer.correct_answer // Case-sensitive comparison
+        : answer.toLowerCase() === card.task.answer.correct_answer.toLowerCase()) ||
     (card.task.answer.type === 'numerical' && Number(answer) === card.task.answer.correct_answer) ||
     (card.task.answer.type === 'multiple choice' && answer === card.task.answer.correct_answer);
 
@@ -87,6 +93,10 @@ const GameBoard = ({ questionData }) => {
         points = 1;
       }
   
+      //animacija
+      setScoreAnimation(`+${points}`);
+      setTimeout(() => setScoreAnimation(null), 1000);
+      //povecanje scorea
       setScore((prevScore) => prevScore + points);
   
       // oznacimo karticu kao completed
@@ -117,7 +127,10 @@ const GameBoard = ({ questionData }) => {
   return (
     <div className="game-board">
       <div className="game-info">
-        <h2>Score: {score}</h2>
+      < h2>
+          Score: {score}
+          {scoreAnimation && <span className="score-animation">{scoreAnimation}</span>}
+        </h2>
         <button onClick={generateRandomNumber}>Novi broj</button>
         {randomNumber && <p>Moj novi broj {randomNumber}</p>}
       </div>

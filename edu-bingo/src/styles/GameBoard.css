@@ -16,6 +16,8 @@
   color: #6a0dad;
   display: flex;
   flex-direction: column;
+  position: relative;
+  display: inline-block;
 }
 
 .game-info h2{
@@ -160,6 +162,27 @@
   color: #333;
   cursor: pointer;
 }
+
+.score-animation {
+  color: rgb(153, 0, 255);
+  font-size: 1.5em;
+  font-weight: bold;
+  margin-left: 10px;
+  position: absolute;
+  animation: fadeUp 1s ease-out;
+}
+
+@keyframes fadeUp {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(20px, -20px); /* Move slightly right and up */
+  }
+}
+
 
 .character {
   margin-bottom: 0px;
