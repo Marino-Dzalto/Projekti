@@ -1,10 +1,10 @@
+import { faCheck } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { useEffect, useState } from 'react';
 import mickey from "../mickey.png";
 import minnie from "../minnie.png";
 import { useSocket } from '../SocketContext';
 import '../styles/GameBoard.css';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheck } from '@fortawesome/free-solid-svg-icons';
 
 const GameBoard = ({ questionData }) => {
   const [cards, setCards] = useState([]);
@@ -58,16 +58,29 @@ const GameBoard = ({ questionData }) => {
 
       socket.on('receiveNewQuestion', handleNewQuestion);
 
+      // samo privremeni listener da se printa pobjednik kad se dojavi tko je pobijedio
+      socket.on('gameEnded', (data) => {
+        console.log(data.winner + " won!!")
+      })
+
       return () => {
         socket.off('receiveNewQuestion', handleNewQuestion);
       };
     }
   }, [cards, socket]);
 
+
+  // kada igrac skupi 18 bodova popunio je karticu i mora obavijestiti svih da je pobijedio, uz to i zavrsiti igru
+  useEffect(() => {
+    if (score >= 18) {
+      socket.emit('endGame', { room_id: questionData.game_id });
+    }
+  }, [questionData.game_id, score, socket]);
+
   // kad igrač odgovori
   const handleSubmitAnswer = () => {
-    console.log(answer);
-    console.log(questionData)
+    // console.log(answer);
+    // console.log(questionData)
     const card = cards[selectedCardIndex];
     if (!card) return;
 
@@ -111,7 +124,7 @@ const GameBoard = ({ questionData }) => {
       }
     } else {
       if (socket) {
-        socket.emit('changeQuestion', { task_id: card.task_id, game_id: questionData.game_id, topic_id: questionData.topic_id });
+        socket.emit('changeQuestion', { task_id: card.task_id, difficulty: card.task.difficulty, game_id: questionData.game_id, topic_id: questionData.topic_id });
       }
     }
 

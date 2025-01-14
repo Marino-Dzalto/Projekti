@@ -250,6 +250,19 @@ def handle_leave_game(data):
 
     del questions[room_id]
 
+    game = Game.query.filter_by(game_id=room_id).first()
+
+    if game:
+        game.end_time = datetime.now()
+        db.session.commit()
+
+    student = Student.query.filter_by(socket_id=request.sid).first()
+
+    if student:
+        name = student.username
+
+    emit("gameEnded", {"winner": name}, room=room_id)
+
 
 @socketio.on("startGame")
 def handle_start_game(data):
@@ -276,9 +289,10 @@ def handle_replace_question(data):
     room_id = data["game_id"]
     task_id = data["task_id"]
     topic_id = data["topic_id"]
+    difficulty = data["difficulty"]
     client = request.sid
 
-    new_question = get_new_question(topic_id, questions[room_id][client])
+    new_question = get_new_question(topic_id, questions[room_id][client], difficulty)
 
     idx = questions[room_id][client].index(task_id)
     questions[room_id][client][idx] = new_question["task_id"]
@@ -373,20 +387,27 @@ def generate_questions(topic_id):
         numerical_ans = aliased(NumericalAnswer)
         mc_ans = aliased(MultipleChoiceAnswer)
 
-        sample = (
-            db.session.query(Task, written_ans, numerical_ans, mc_ans)
-            .filter(Task.topic_id == topic_id)
-            .outerjoin(written_ans, Task.task_id == written_ans.task_id)
-            .outerjoin(numerical_ans, Task.task_id == numerical_ans.task_id)
-            .outerjoin(mc_ans, Task.task_id == mc_ans.task_id)
-            .order_by(func.random())
-            .limit(9)
-            .all()
-        )
+        queries = []
+
+        for diff in ["easy", "medium", "high"]:
+            query = (
+                db.session.query(Task, written_ans, numerical_ans, mc_ans)
+                .filter(Task.topic_id == topic_id, Task.difficulty == diff)
+                .outerjoin(written_ans, Task.task_id == written_ans.task_id)
+                .outerjoin(numerical_ans, Task.task_id == numerical_ans.task_id)
+                .outerjoin(mc_ans, Task.task_id == mc_ans.task_id)
+                .order_by(func.random())
+                .limit(3)
+            )
+            queries.append(query)
+
+        sample = queries[0]
+        for q in queries[1:]:
+            sample = sample.union_all(q)
 
         ret = []
 
-        for task, written_data, numerical_data, mc_data in sample:
+        for task, written_data, numerical_data, mc_data in sample.all():
             obj = {
                 "task_id": str(task.task_id),
                 "question": task.question,
@@ -418,7 +439,7 @@ def generate_questions(topic_id):
     return ret
 
 
-def get_new_question(topic_id, excluded_ids):
+def get_new_question(topic_id, excluded_ids, difficulty):
     if topic_id:
         written_ans = aliased(WrittenAnswer)
         numerical_ans = aliased(NumericalAnswer)
@@ -426,7 +447,7 @@ def get_new_question(topic_id, excluded_ids):
 
         new_task = (
             db.session.query(Task, written_ans, numerical_ans, mc_ans)
-            .filter(Task.topic_id == topic_id)
+            .filter(Task.topic_id == topic_id, Task.difficulty == difficulty)
             .filter(~Task.task_id.in_(excluded_ids))
             .outerjoin(written_ans, Task.task_id == written_ans.task_id)
             .outerjoin(numerical_ans, Task.task_id == numerical_ans.task_id)
