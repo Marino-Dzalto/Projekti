@@ -1,0 +1,114 @@
+/* src/styles/Lobby.css */
+
+.lobby-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  background-color: #f3e8ff;
+  font-family: 'Comic Sans MS', 'Comic Sans', cursive;
+  border-radius: 20px;
+  box-shadow: 0px 8px 20px rgba(122, 73, 220, 0.3);
+  color: #4a148c;
+  position: relative;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  font-size: 1.5em;
+  color: #6a0dad;
+  margin-bottom: 20px;
+}
+
+.current-time {
+  font-size: 1.2rem;
+  color: #7b1fa2;
+}
+
+.current-time h2{
+  background-color:#d9b3ff;
+  width: 100%;
+  border-radius: 5px;
+}
+
+.highlight {
+  color: #7b1fa2;
+  font-weight: bold;
+}
+
+.lobby-info {
+  text-align: center;
+  margin-top: 10px;
+}
+
+.timer {
+  margin-top: 10px;
+  font-size: 1.2rem;
+  color: #7b1fa2;
+}
+
+.main-content {
+  display: flex;
+  gap: 30px;
+  width: 100%;
+  margin-top: 20px;
+}
+
+.player-list, .chat {
+  flex: 1;
+  padding: 15px;
+  background-color: #d9b3ff;
+  border-radius: 10px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.15);
+  width: 250px;
+  height: auto;
+  margin-top: 0;
+}
+
+.chat-window {
+  border: 1px solid #b39ddb;
+  padding: 10px;
+  height: 200px;
+  overflow-y: auto;
+  margin-bottom: 10px;
+  background-color: #fff;
+  border-radius: 10px;
+}
+
+.message-box {
+  display: flex;
+  justify-content: space-between;
+  padding: 5px, 0;
+  border-bottom: 1px solid #7b1fa2;
+}
+
+form {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+
+button {
+  margin-top: 0;
+  font-size: 1rem;
+  font-weight: bold;
+  background-color: #7b1fa2;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.1s;
+  margin-left: 5px;
+}
+
+button:hover {
+  background-color: #5e118e;
+  transform: scale(1.1);
+}
+
+button:active {
+  transform: scale(0.95);
+}
