@@ -6,7 +6,7 @@ import minnie from "../minnie.png";
 import { useSocket } from '../SocketContext';
 import '../styles/GameBoard.css';
 
-const GameBoard = ({ questionData }) => {
+const GameBoard = ({ questionData, onEndGame }) => {
   const [cards, setCards] = useState([]);
   const [randomNumber, setRandomNumber] = useState(null);
   const [selectedCardIndex, setSelectedCardIndex] = useState(null);
@@ -57,17 +57,16 @@ const GameBoard = ({ questionData }) => {
       };
 
       socket.on('receiveNewQuestion', handleNewQuestion);
-
-      // samo privremeni listener da se printa pobjednik kad se dojavi tko je pobijedio
-      socket.on('gameEnded', (data) => {
-        console.log(data.winner + " won!!")
+      socket.on('gameEnded', () => {
+        onEndGame();
       })
 
       return () => {
         socket.off('receiveNewQuestion', handleNewQuestion);
+        socket.off('gameEnded');
       };
     }
-  }, [cards, socket]);
+  }, [cards, onEndGame, socket]);
 
 
   // kada igrac skupi 18 bodova popunio je karticu i mora obavijestiti svih da je pobijedio, uz to i zavrsiti igru

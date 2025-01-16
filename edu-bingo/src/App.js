@@ -17,7 +17,6 @@ const App = () => {
   const [isGameLocked, setIsGameLocked] = useState(false); // je li soba zaključana/otključana
   const [isGameStarted, setIsGameStarted] = useState(false); //je li igra započela ili smo još u lobbyu
   const [showLeaderboard, setShowLeaderboard] = useState(false); //pokazivanje leaderboarda
-  const [scores, setScores] = useState([]);
   const [questionData, setQuestionData] = useState([]);
 
   const handleCreateGame = async (data) => {
@@ -59,23 +58,6 @@ const App = () => {
     setIsGameStarted(false);
   };
 
-  // Fetchanje leaderboarda sa backenda
-  const fetchLeaderboard = async (gameCode) => {
-    try {
-      const response = await fetch(`/api/leaderboard/${gameCode}`);
-      if (!response.ok) {
-        throw new Error(`Error fetching leaderboard: ${response.statusText}`);
-      }
-      const data = await response.json();
-
-      setPlayers(data.map((player) => ({ name: player.name })));
-      setScores(data.map((player) => player.score));
-      setShowLeaderboard(true);
-    } catch (error) {
-      console.error("Failed to fetch leaderboard:", error);
-    }
-  };
-
   const handleStartGame = (data) => {
     setQuestionData(data);
     setIsGameStarted(true);
@@ -83,7 +65,7 @@ const App = () => {
 
   const handleEndGame = () => {
     setIsGameStarted(false);
-    fetchLeaderboard(gameCode);
+    setShowLeaderboard(true);
   };
 
   useEffect(() => {
@@ -117,14 +99,12 @@ const App = () => {
       <div className="App">
         {isGameStarted ? (
           // Ako je igra krenula idemo na GameBoard
-          <GameBoard players={players} gameCode={gameCode} questionData={questionData} onEndGame={handleEndGame} />
-        ) : adminData ? (
+          <GameBoard questionData={questionData} onEndGame={handleEndGame} />
+        ) : adminData && !showLeaderboard ? (
           // Ako adminData imamo, a Game code jos ne onda mi pokaži AdminGame(teacher dio)
-          <AdminGame
-            adminData={adminData}
-          />
+          <AdminGame adminData={adminData} onEndGame={handleEndGame} />
         ) : showLeaderboard ? (
-          <Leaderboard players={players} scores={scores} />
+          <Leaderboard gameId={adminData ? adminData.game_id : questionData.game_id} />
         ) : players ? (
           // Ako je izgeneriran code, ali igra još nije krenla onda smo još u Lobbyu
           <Lobby

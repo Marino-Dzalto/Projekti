@@ -1,16 +1,31 @@
-import React from 'react';
-import '../styles/Leaderboard.css';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMedal } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import React, { useEffect, useState } from 'react';
+import '../styles/Leaderboard.css';
 
-const Leaderboard = ({ players, scores }) => {
-  const playerData = players.map((player, index) => ({
-    name: player.name || `Player ${index + 1}`,
-    score: scores[index] !== undefined ? scores[index] : 0, // Default to 0
-  }));
+const Leaderboard = ({ gameId }) => {
+  const [playerData, setPlayerData] = useState([]);
 
-  // Sortiranje igrača po scoreu
-  const sortedPlayers = [...playerData].sort((a, b) => b.score - a.score);
+  useEffect(() => {
+      const fetchLeaderboard = async () => {
+        try {
+          const response = await fetch(`/api/leaderboard/${gameId}`);
+          if (response.ok) {
+            const data = await response.json();
+            const playerData = data.leaderboard.map((player, index) => ({
+              name: player.username || `Player ${index + 1}`,
+              score: player.total_score
+            }));
+            setPlayerData(playerData);
+          } else {
+            console.error('Failed to fetch leaderboard');
+          }
+        } catch (error) {
+          console.error('Error fetching leaderboard', error);
+        }
+      };
+      fetchLeaderboard();
+    }, [gameId]);
 
   const medalColors = ['#FFD700', '#C0C0C0', '#CD7F32']; // Gold, Silver, Bronze
 
@@ -37,7 +52,7 @@ const Leaderboard = ({ players, scores }) => {
           </tr>
         </thead>
         <tbody>
-          {sortedPlayers.map((player, index) => (
+          {playerData.map((player, index) => (
             <tr key={index} className="leaderboard-row">
               <td>
                 {index < 3 ? (
