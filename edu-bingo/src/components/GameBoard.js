@@ -1,4 +1,4 @@
-import { faCheck } from '@fortawesome/free-solid-svg-icons';
+import { faCheck, faMedal, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { useEffect, useState } from 'react';
 import mickey from "../mickey.png";
@@ -16,6 +16,7 @@ const GameBoard = ({ questionData, onEndGame }) => {
   const [score, setScore] = useState(0);
   const [scoreAnimation, setScoreAnimation] = useState(null);
   const [showEndGamePopup, setShowEndGamePopup] = useState(false);
+  const [showErrorOverlay, setShowErrorOverlay] = useState(false);
   const [winner, setWinner] = useState(null);
   const socket = useSocket();
 
@@ -155,14 +156,17 @@ const GameBoard = ({ questionData, onEndGame }) => {
       if (socket) {
         socket.emit('playerAnswered', { task_id: card.task_id, game_id: questionData.game_id, score: points });
       }
+      setSelectedCardIndex(null);
     } else {
       if (socket) {
+        setShowErrorOverlay(true);
+        setTimeout(() => setShowErrorOverlay(false), 1000); // X će nestati nakon 1 sekunde
         socket.emit('changeQuestion', { task_id: card.task_id, difficulty: card.task.difficulty, game_id: questionData.game_id, topic_id: questionData.topic_id });
       }
     }
 
     setAnswer('');
-    setSelectedCardIndex(null);
+    
   };
 
   const closeModal = () => {
@@ -173,90 +177,101 @@ const GameBoard = ({ questionData, onEndGame }) => {
   return (
     <div className="game-board">
       <div className="game-info">
-      < h2>
-          Score: {score}
-          {scoreAnimation && <span className="score-animation">{scoreAnimation}</span>}
-        </h2>
-        <button onClick={generateRandomNumber}>Novi broj</button>
-        {randomNumber && <p>Moj novi broj {randomNumber}</p>}
-      </div>
+        < h2>
+            Score: {score}
+            {scoreAnimation && <span className="score-animation">{scoreAnimation}</span>}
+          </h2>
+          <button onClick={generateRandomNumber}>Novi broj</button>
+          {randomNumber && <p>Moj novi broj {randomNumber}</p>}
+        </div>
 
-      <div className="card-grid">
-        {cards.map((card, index) => (
-          <div
-            key={card.id}
-            className={`card ${card.flipped ? 'flipped' : ''}`}
-            onClick={() => {
-              if (randomNumber === card.number) {
-                setSelectedCardIndex(index);
-              }
-            }}
-          >
-            <p>{card.completed ? <FontAwesomeIcon icon={faCheck} className="icon-check" /> : `Redni broj: ${card.number}`}</p>
+        <div className="card-grid">
+          {cards.map((card, index) => (
+            <div
+              key={card.id}
+              className={`card ${card.flipped ? 'flipped' : ''}`}
+              onClick={() => {
+                if (randomNumber === card.number) {
+                  setSelectedCardIndex(index);
+                }
+              }}
+            >
+              <p>{card.completed ? <FontAwesomeIcon icon={faCheck} className="icon-check" /> : `Redni broj: ${card.number}`}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Mickey and Minnie */}
+        <div className = "character">
+          <div className="minnie">
+              <img src={minnie} alt="Minnie pic"/>
           </div>
-        ))}
-      </div>
-
-      {/* Mickey and Minnie */}
-      <div className = "character">
-        <div className="minnie">
-            <img src={minnie} alt="Minnie pic"/>
-        </div>
-        <div className="mickey">
-            <img src={mickey} alt="Mickey pic"/>
-        </div>
-        
-      </div>
-
-      {/* Modal za javljanje pobjednika */}
-      {showEndGamePopup && (
-        <div className="modal-overlay active">
-          <div className="modal-content">
-            <p>{winner} ima Bingo!!</p>
+          <div className="mickey">
+              <img src={mickey} alt="Mickey pic"/>
           </div>
+          
         </div>
-      )}
 
-      {/* Modal za otvaranje prozora pitanja */}
-      {selectedCardIndex !== null && (
-        <div className="modal-overlay active">
-          <div className="modal-content">
-            <span className="close-button" onClick={closeModal}>&times;</span>
-            <p>{cards[selectedCardIndex].task.question}</p>
-            {!cards[selectedCardIndex].completed && (
-              <>
-                {cards[selectedCardIndex].task.answer.type === 'written' && (
-                  <input
-                    type="text"
-                    value={answer}
-                    onChange={(e) => setAnswer(e.target.value)}
-                  />
-                )}
-                {cards[selectedCardIndex].task.answer.type === 'numerical' && (
-                  <input
-                    type="number"
-                    value={answer}
-                    onChange={(e) => setAnswer(e.target.value)}
-                  />
-                )}
-                {cards[selectedCardIndex].task.answer.type === 'multiple choice' && (
-                  <div className="options-container">
-                    {['a', 'b', 'c'].map((letter) => (
-                      <div
-                        key={letter}
-                        className={`option-box ${
-                          answer === letter ? 'selected' : ''
-                        }`}
-                        onClick={() => setAnswer(letter)}
-                      >
-                        {cards[selectedCardIndex].task.answer[`option_${letter}`]}
-                      </div>
-                    ))}
-                  </div>
-                )}
-                <button onClick={handleSubmitAnswer}>Potvrdi odgovor</button>
-              </>
-            )}
+          {/* Modal za javljanje pobjednika */}
+          {showEndGamePopup && (
+          <div className="modal-overlay active">
+            <div className="modal-content-winner">
+            <p>
+              <FontAwesomeIcon
+                icon={faMedal}
+                style={{ color: 'gold', marginRight: '8px' }}/> {winner} ima Bingo!!
+            </p>
+            </div>
+          </div>
+          )}
+
+          {/* Prikaz crvenog X-a kod pogrešnog odgovora */}
+          {showErrorOverlay && (
+            <div className="error-overlay">
+              <FontAwesomeIcon icon={faTimes} className="error-icon" />
+            </div>
+          )}
+
+          {/* Modal za otvaranje prozora pitanja */}
+          {selectedCardIndex !== null && (
+          <div className="modal-overlay active">
+            <div className="modal-content">
+              <span className="close-button" onClick={closeModal}>&times;</span>
+              <p>{cards[selectedCardIndex].task.question}</p>
+              {!cards[selectedCardIndex].completed && (
+                <>
+                  {cards[selectedCardIndex].task.answer.type === 'written' && (
+                    <input
+                      type="text"
+                      value={answer}
+                      onChange={(e) => setAnswer(e.target.value)}
+                    />
+                  )}
+                  {cards[selectedCardIndex].task.answer.type === 'numerical' && (
+                    <input
+                      type="number"
+                      value={answer}
+                      onChange={(e) => setAnswer(e.target.value)}
+                    />
+                  )}
+                  {cards[selectedCardIndex].task.answer.type === 'multiple choice' && (
+                    <div className="options-container">
+                      {['a', 'b', 'c'].map((letter) => (
+                        <div
+                          key={letter}
+                          className={`option-box ${
+                            answer === letter ? 'selected' : ''
+                          }`}
+                          onClick={() => setAnswer(letter)}
+                        >
+                          {cards[selectedCardIndex].task.answer[`option_${letter}`]}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <button onClick={handleSubmitAnswer}>Potvrdi odgovor</button>
+                </>
+              )}
           </div>
         </div>
       )}
