@@ -10,6 +10,7 @@ const GameBoard = ({ questionData, onEndGame }) => {
   const [cards, setCards] = useState([]);
   const [randomNumber, setRandomNumber] = useState(null);
   const [drawnNumbers, setDrawnNumbers] = useState(new Set());
+  const [cardNumbers, setCardNumbers] = useState([]);
   const [selectedCardIndex, setSelectedCardIndex] = useState(null);
   const [answer, setAnswer] = useState('');
   const [score, setScore] = useState(0);
@@ -40,6 +41,7 @@ const GameBoard = ({ questionData, onEndGame }) => {
     }));
 
     setCards(initialCards);
+    setCardNumbers(uniqueCardNumbers);
   }, [questionData]);
 
   const generateRandomNumber = () => {
@@ -52,7 +54,9 @@ const GameBoard = ({ questionData, onEndGame }) => {
     do {
       newNumber = Math.floor(Math.random() * 90) + 1;
     } while (drawnNumbers.has(newNumber));
-    setDrawnNumbers((prev) => new Set(prev).add(newNumber));
+    if (!cardNumbers.includes(newNumber)) {
+      setDrawnNumbers((prev) => new Set(prev).add(newNumber));
+    }
     setRandomNumber(newNumber);
   };
 
@@ -104,8 +108,6 @@ const GameBoard = ({ questionData, onEndGame }) => {
     if (!card) return;
 
     if (answer === "BINGOBINGO") {
-      setScoreAnimation(`+18`);
-      setTimeout(() => setScoreAnimation(null), 1000);
       setScore(18);
       setAnswer('');
       setSelectedCardIndex(null);
@@ -139,6 +141,9 @@ const GameBoard = ({ questionData, onEndGame }) => {
       setTimeout(() => setScoreAnimation(null), 1000);
       //povecanje scorea
       setScore((prevScore) => prevScore + points);
+
+      // dodaj broj s kartice u set potrosenih (izvucenih) brojeva
+      setDrawnNumbers((prev) => new Set(prev).add(card.number));
   
       // oznacimo karticu kao completed
       setCards((prevCards) =>
