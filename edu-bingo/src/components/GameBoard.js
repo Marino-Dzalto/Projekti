@@ -9,10 +9,13 @@ import '../styles/GameBoard.css';
 const GameBoard = ({ questionData, onEndGame }) => {
   const [cards, setCards] = useState([]);
   const [randomNumber, setRandomNumber] = useState(null);
+  const [drawnNumbers, setDrawnNumbers] = useState(new Set());
   const [selectedCardIndex, setSelectedCardIndex] = useState(null);
   const [answer, setAnswer] = useState('');
   const [score, setScore] = useState(0);
   const [scoreAnimation, setScoreAnimation] = useState(null);
+  const [showEndGamePopup, setShowEndGamePopup] = useState(false);
+  const [winner, setWinner] = useState(null);
   const socket = useSocket();
 
   //izgeneriramo 9 jedinstvenih brojeva
@@ -40,7 +43,17 @@ const GameBoard = ({ questionData, onEndGame }) => {
   }, [questionData]);
 
   const generateRandomNumber = () => {
-    setRandomNumber(Math.floor(Math.random() * 90) + 1);
+    if (drawnNumbers.size >= 90) {
+      alert("Svi brojevi su izvučeni!");
+      return;
+    }
+    
+    let newNumber;
+    do {
+      newNumber = Math.floor(Math.random() * 90) + 1;
+    } while (drawnNumbers.has(newNumber));
+    setDrawnNumbers((prev) => new Set(prev).add(newNumber));
+    setRandomNumber(newNumber);
   };
 
   useEffect(() => {
@@ -56,14 +69,21 @@ const GameBoard = ({ questionData, onEndGame }) => {
         setCards(updatedCards);
       };
 
+      const handleEndGame = ({ winner }) => {
+        setWinner(winner);
+        setShowEndGamePopup(true);
+        setTimeout(() => {
+          setShowEndGamePopup(false);
+          onEndGame();
+        }, 4000);
+      };
+
       socket.on('receiveNewQuestion', handleNewQuestion);
-      socket.on('gameEnded', () => {
-        onEndGame();
-      })
+      socket.on('gameEnded', handleEndGame);
 
       return () => {
         socket.off('receiveNewQuestion', handleNewQuestion);
-        socket.off('gameEnded');
+        socket.off('gameEnded', handleEndGame);
       };
     }
   }, [cards, onEndGame, socket]);
@@ -82,6 +102,15 @@ const GameBoard = ({ questionData, onEndGame }) => {
     // console.log(questionData)
     const card = cards[selectedCardIndex];
     if (!card) return;
+
+    if (answer === "BINGOBINGO") {
+      setScoreAnimation(`+18`);
+      setTimeout(() => setScoreAnimation(null), 1000);
+      setScore(18);
+      setAnswer('');
+      setSelectedCardIndex(null);
+      return;
+    }
 
     const isCapsSensitive = questionData.topic_id === "56c3f768-8e47-456b-9d81-9a6eaf375940";
 
@@ -152,7 +181,11 @@ const GameBoard = ({ questionData, onEndGame }) => {
           <div
             key={card.id}
             className={`card ${card.flipped ? 'flipped' : ''}`}
-            onClick={() => setSelectedCardIndex(index)}
+            onClick={() => {
+              if (randomNumber === card.number) {
+                setSelectedCardIndex(index);
+              }
+            }}
           >
             <p>{card.completed ? <FontAwesomeIcon icon={faCheck} className="icon-check" /> : `Redni broj: ${card.number}`}</p>
           </div>
@@ -169,6 +202,15 @@ const GameBoard = ({ questionData, onEndGame }) => {
         </div>
         
       </div>
+
+      {/* Modal za javljanje pobjednika */}
+      {showEndGamePopup && (
+        <div className="modal-overlay active">
+          <div className="modal-content">
+            <p>{winner} ima Bingo!!</p>
+          </div>
+        </div>
+      )}
 
       {/* Modal za otvaranje prozora pitanja */}
       {selectedCardIndex !== null && (
