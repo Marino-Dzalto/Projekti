@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from flask_socketio import SocketIO, emit, join_room, leave_room
+from sqlalchemy import or_
 from sqlalchemy.sql.expression import func
 from sqlalchemy.orm import aliased
 from db_models import (
@@ -58,6 +59,35 @@ def verify_teacher():
         return {"teacher_id": str(teacher.teacher_id)}, 200
     else:
         return {"message": "Invalid password"}, 401
+
+
+@app.post("/api/create-teacher")
+def create_teacher():
+    data = request.get_json()
+    username = data["username"]
+    password = data["password"]
+    email = data["email"]
+
+    teacher = Teacher.query.filter(
+        or_(Teacher.username == username, Teacher.email == email)
+    ).first()
+
+    if teacher:
+        return {
+            "message": "Teacher with the same username or email already exists"
+        }, 401
+
+    new_teacher = Teacher(
+        username=username,
+        email=email,
+        password=hash_password(password),
+        date_registered=datetime.now(),
+    )
+
+    db.session.add(new_teacher)
+    db.session.commit()
+
+    return {"teacher_id": str(new_teacher.teacher_id)}, 200
 
 
 @app.post("/api/create-game")
