@@ -4,8 +4,8 @@ import '@fortawesome/fontawesome-free/css/all.min.css';
 import React, { useState } from 'react';
 import mickey from "../mickey.png";
 import minnie from "../minnie.png";
-
 import { useSocket } from '../SocketContext';
+import '../styles/Home.css'; // Added CSS import
 
 const SignUp = ({ onClose }) => {
   const [formData, setFormData] = useState({
@@ -214,7 +214,7 @@ const Home = ({ onCreateGame, setPlayers, setGameCode, setAdminName}) => {
           onChange={(e) => setAdminUsername(e.target.value)}
         />
         <input
-          type="text"
+          type="password"
           placeholder="Password admina"
           value={adminPass}
           onChange={(e) => setAdminPass(e.target.value)}
