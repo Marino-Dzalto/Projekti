@@ -7,7 +7,7 @@ export const SocketProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
 
   useEffect(() => {
-    const socketIo = io('', {
+    const socketIo = io('http://localhost:5000', {
       reconnection: true,
       reconnectionAttempts: 5,
       reconnectionDelay: 1000
