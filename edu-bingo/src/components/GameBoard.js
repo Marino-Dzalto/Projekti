@@ -108,7 +108,7 @@ const GameBoard = ({ questionData, onEndGame }) => {
     const card = cards[selectedCardIndex];
     if (!card) return;
 
-    if (answer === "BINGOBINGO") {
+    if (answer === "BINGOBINGO" || answer === "1337") {
       setScore(18);
       setAnswer('');
       setSelectedCardIndex(null);

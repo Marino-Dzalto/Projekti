@@ -39,14 +39,19 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db.init_app(app)
 
-socketio = SocketIO(app, cors_allowed_origins="*")  # Restrict CORS to a specific domain
+socketio = SocketIO(
+    app, cors_allowed_origins="http://localhost:3000"
+)  # Restrict CORS to a specific domain
 
 questions = {}
 
 
 @app.post("/api/verify-teacher")
 def verify_teacher():
-    data = request.get_json()
+    data = request.get_json(silent=True)
+    if data is None:
+        return {"message": "Invalid JSON payload"}, 400
+
     username = data["adminUsername"]
     password = data["adminPass"]
 
@@ -63,7 +68,10 @@ def verify_teacher():
 
 @app.post("/api/create-teacher")
 def create_teacher():
-    data = request.get_json()
+    data = request.get_json(silent=True)
+    if data is None:
+        return {"message": "Invalid JSON payload"}, 400
+
     username = data["username"]
     password = data["password"]
     email = data["email"]
@@ -84,15 +92,21 @@ def create_teacher():
         date_registered=datetime.now(),
     )
 
-    db.session.add(new_teacher)
-    db.session.commit()
+    try:
+        db.session.add(new_teacher)
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        return {"message": f"Database error: {str(e)}"}, 500
 
     return {"teacher_id": str(new_teacher.teacher_id)}, 200
 
 
 @app.post("/api/create-game")
 def create_game():
-    data = request.get_json()
+    data = request.get_json(silent=True)
+    if data is None:
+        return {"message": "Invalid JSON payload"}, 400
 
     new_game = Game(
         teacher_id=data["teacher_id"],
@@ -101,8 +115,12 @@ def create_game():
         is_locked=False,
     )
 
-    db.session.add(new_game)
-    db.session.commit()
+    try:
+        db.session.add(new_game)
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        return {"message": f"Database error: {str(e)}"}, 500
 
     return {
         "game_id": str(new_game.game_id),
@@ -112,7 +130,9 @@ def create_game():
 
 @app.post("/api/join-game/<string:code>")
 def join_game(code):
-    player_name = request.get_json()
+    player_name = request.get_json(silent=True)
+    if player_name is None:
+        return {"message": "Invalid JSON payload"}, 400
 
     game = Game.query.filter(
         Game.game_code == code, Game.end_time.is_(None), Game.is_locked == False
@@ -128,8 +148,12 @@ def join_game(code):
         is_active=True,
     )
 
-    db.session.add(new_student)
-    db.session.commit()
+    try:
+        db.session.add(new_student)
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        return {"message": f"Database error: {str(e)}"}, 500
 
     players = Student.query.filter(
         Student.game_id == game.game_id,
@@ -159,15 +183,21 @@ def join_game(code):
 
 @app.post("/api/set-topic/<string:game_id>")
 def set_topic(game_id):
-    data = request.get_json()
+    data = request.get_json(silent=True)
+    if data is None:
+        return {"message": "Invalid JSON payload"}, 400
 
     game = Game.query.filter_by(game_id=game_id).first()
 
     if not game:
         return {"message": "No such game in database"}, 404
 
-    game.topic_selected = data["topic"]["topic_id"]
-    db.session.commit()
+    try:
+        game.topic_selected = data["topic"]["topic_id"]
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        return {"message": f"Database error: {str(e)}"}, 500
 
     return {"game_id": str(game.game_id), "message": "Game topic set"}, 200
 
@@ -179,8 +209,12 @@ def lock_room(game_id):
     if not game:
         return {"message": "No such game in database"}, 404
 
-    game.is_locked = True
-    db.session.commit()
+    try:
+        game.is_locked = True
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        return {"message": f"Database error: {str(e)}"}, 500
 
     return {"game_id": str(game.game_id), "message": "Game locked"}, 200
 
@@ -267,8 +301,13 @@ def handle_join_room(data):
     ).first()
 
     if student:
-        student.socket_id = request.sid
-        db.session.commit()
+        try:
+            student.socket_id = request.sid
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            emit("error", {"message": f"Database error {str(e)}"}, to=request.sid)
+            return
 
     join_room(str(game.game_id))
     handle_update_players({"game_id": str(game.game_id)})
@@ -278,13 +317,19 @@ def handle_join_room(data):
 def handle_leave_game(data):
     room_id = data["room_id"]
 
-    del questions[room_id]
+    if room_id in questions:
+        del questions[room_id]
 
     game = Game.query.filter_by(game_id=room_id).first()
 
     if game:
-        game.end_time = datetime.now()
-        db.session.commit()
+        try:
+            game.end_time = datetime.now()
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            emit("error", {"message": f"Database error {str(e)}"}, room=room_id)
+            return
 
     student = Student.query.filter_by(socket_id=request.sid).first()
 
@@ -298,6 +343,7 @@ def handle_leave_game(data):
 def handle_start_game(data):
     room_id = data["room_id"]
     topic_id = data["selectedTopic"]["topic_id"]
+
     clients = list(socketio.server.manager.rooms["/"].get(room_id, {}).keys())
 
     if room_id not in questions:
@@ -351,8 +397,13 @@ def handle_player_answered(data):
             score=score,
         )
 
-        db.session.add(new_score)
-        db.session.commit()
+        try:
+            db.session.add(new_score)
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            emit("error", {"message": f"Database error {str(e)}"}, to=player_sid)
+            return
 
 
 @socketio.on("updatePlayers")
@@ -387,7 +438,12 @@ def handle_player_disconnect():
         student.is_active = False
         student.end_time = datetime.now()
 
-        db.session.commit()
+        try:
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            emit("error", {"message": f"Database error {str(e)}"}, to=request.sid)
+            return
 
         leave_room(str(student.game_id))
         handle_update_players({"game_id": str(student.game_id)})
