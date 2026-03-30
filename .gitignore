@@ -1,0 +1,33 @@
+# Compiled Java classes
+*.class
+
+# JAR files (build artifacts)
+SwissTurnir.jar
+manifest.mf
+
+# Maven build output
+SwissOnlineServer/target/
+SwissOnlineServer/.mvn/wrapper/maven-wrapper.jar
+
+# Runtime data (not committed — created on first run)
+players_db.txt
+tournament_history/
+
+# Logs
+*.log
+ngrok.log
+server.log
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+
+# Environment / secrets
+config.local.properties
