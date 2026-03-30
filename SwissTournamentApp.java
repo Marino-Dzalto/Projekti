@@ -1836,6 +1836,7 @@ public static void main(String[] args) {
         private final JComboBox<Integer> cbStandingsRound = new JComboBox<>();
 
         private final JLabel statusLabel;
+        private final JLabel syncLabel = new JLabel("● Offline");
 
         private final JTextField txtFirstNameFilter = new JTextField(10);
         private final JTextField txtLastNameFilter = new JTextField(10);
@@ -1952,48 +1953,66 @@ public boolean applyWebReport(WebReportEntry rep) {
             return "http://localhost:8080";
         }
 
+        private void setSyncOk(String action) {
+            SwingUtilities.invokeLater(() -> {
+                syncLabel.setText("● Online");
+                syncLabel.setForeground(Color.decode("#27ae60"));
+                syncLabel.setToolTipText("Zadnja sinkronizacija: " + action);
+            });
+        }
+
+        private void setSyncFailed(String action, Exception ex) {
+            String msg = ex.getMessage() != null ? ex.getMessage() : ex.getClass().getSimpleName();
+            SwingUtilities.invokeLater(() -> {
+                syncLabel.setText("● Sync greška");
+                syncLabel.setForeground(Color.decode("#e74c3c"));
+                syncLabel.setToolTipText(action + " nije uspio: " + msg);
+            });
+        }
+
         private void onlineCreateTournamentIfPossible() {
             try {
                 online.createTournament(tournamentKey, tournamentBaseName);
-                System.out.println("[ONLINE] createTournament OK " + tournamentKey);
+                setSyncOk("createTournament");
             } catch (Exception ex) {
-                System.out.println("[ONLINE] createTournament FAIL " + tournamentKey + " -> " + ex);
-                ex.printStackTrace();
+                setSyncFailed("createTournament", ex);
             }
         }
 
         private void onlineSyncPlayersIfPossible() {
             try {
                 online.upsertPlayers(tournamentKey, tournament.getPlayers());
-                System.out.println("[ONLINE] upsertPlayers OK " + tournamentKey);
+                setSyncOk("upsertPlayers");
             } catch (Exception ex) {
-                System.out.println("[ONLINE] upsertPlayers FAIL " + tournamentKey + " -> " + ex);
-                ex.printStackTrace();
+                setSyncFailed("upsertPlayers", ex);
             }
         }
 
         private void onlinePublishPairingsIfPossible(int roundNumber, List<Match> matches) {
             try {
                 online.publishPairings(tournamentKey, roundNumber, matches);
-                System.out.println("[ONLINE] publishPairings OK r" + roundNumber + " " + tournamentKey);
+                setSyncOk("publishPairings r" + roundNumber);
             } catch (Exception ex) {
-                System.out.println("[ONLINE] publishPairings FAIL r" + roundNumber + " " + tournamentKey + " -> " + ex);
-                ex.printStackTrace();
+                setSyncFailed("publishPairings r" + roundNumber, ex);
             }
         }
 
         private void onlineStartTimerIfPossible(int prepSeconds, int roundSeconds) {
             try {
                 online.startTimer(tournamentKey, prepSeconds, roundSeconds);
-                System.out.println("[ONLINE] startTimer OK " + tournamentKey);
+                setSyncOk("startTimer");
             } catch (Exception ex) {
-                System.out.println("[ONLINE] startTimer FAIL " + tournamentKey + " -> " + ex);
-                ex.printStackTrace();
+                setSyncFailed("startTimer", ex);
             }
         }
 
         private void onlineStopTimerIfPossible() {
-            try { online.stopTimer(tournamentKey); } catch (Exception ignored) {}
+            try {
+                online.stopTimer(tournamentKey);
+                setSyncOk("stopTimer");
+            } catch (Exception ex) {
+                setSyncFailed("stopTimer", ex);
+            }
         }
 
         private static String generateTournamentKey() {
@@ -2033,6 +2052,16 @@ public boolean applyWebReport(WebReportEntry rep) {
             statusLabel.setForeground(UI_TEXT2);
             statusLabel.setBackground(UI_TOOLBAR);
             statusLabel.setOpaque(true);
+
+            syncLabel.setFont(syncLabel.getFont().deriveFont(Font.BOLD, 11f));
+            syncLabel.setForeground(Color.decode("#888888"));
+            syncLabel.setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createMatteBorder(1, 0, 0, 0, UI_BORDER),
+                    BorderFactory.createEmptyBorder(6, 14, 6, 14)
+            ));
+            syncLabel.setBackground(UI_TOOLBAR);
+            syncLabel.setOpaque(true);
+
             initUi();
             // Poll judge calls so desktop can highlight tables that requested a judge
             judgePollTimer = new javax.swing.Timer(1500, e -> refreshJudgeCallsSilently());
@@ -2247,8 +2276,12 @@ lblTimer = new JLabel("Timer: --:--");
             mainSplit.setResizeWeight(0.52);
             mainSplit.setBorder(null);
 
+            JPanel bottomBar = new JPanel(new BorderLayout());
+            bottomBar.add(statusLabel, BorderLayout.CENTER);
+            bottomBar.add(syncLabel, BorderLayout.EAST);
+
             add(mainSplit, BorderLayout.CENTER);
-            add(statusLabel, BorderLayout.SOUTH);
+            add(bottomBar, BorderLayout.SOUTH);
 
             DocumentListener filterListener = new DocumentListener() {
                 @Override public void insertUpdate(DocumentEvent e) { refilterDb(); }
