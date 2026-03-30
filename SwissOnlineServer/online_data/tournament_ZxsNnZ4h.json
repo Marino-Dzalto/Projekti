@@ -1,0 +1,103 @@
+{
+  "key" : "ZxsNnZ4h",
+  "name" : "ygo",
+  "currentRound" : 4,
+  "playersById" : {
+    "0002" : {
+      "id" : "0002",
+      "firstName" : "Vid",
+      "lastName" : "Karlić"
+    },
+    "121442313" : {
+      "id" : "121442313",
+      "firstName" : "Ivan",
+      "lastName" : "Soric"
+    },
+    "0001" : {
+      "id" : "0001",
+      "firstName" : "Renato",
+      "lastName" : "Smijulj"
+    },
+    "14214" : {
+      "id" : "14214",
+      "firstName" : "Karlo",
+      "lastName" : "Siketić"
+    },
+    "2144" : {
+      "id" : "2144",
+      "firstName" : "Ivan",
+      "lastName" : "Crnkovic"
+    },
+    "0304479513" : {
+      "id" : "0304479513",
+      "firstName" : "Marino",
+      "lastName" : "Dzalto"
+    },
+    "12144" : {
+      "id" : "12144",
+      "firstName" : "Kristina",
+      "lastName" : "Siketić"
+    }
+  },
+  "currentPairings" : [ {
+    "table" : 1,
+    "p1" : {
+      "id" : "0001",
+      "firstName" : "Renato",
+      "lastName" : "Smijulj"
+    },
+    "p2" : {
+      "id" : "0002",
+      "firstName" : "Vid",
+      "lastName" : "Karlić"
+    },
+    "result" : "UNDECIDED",
+    "timeExtensionMin" : 0
+  }, {
+    "table" : 2,
+    "p1" : {
+      "id" : "0304479513",
+      "firstName" : "Marino",
+      "lastName" : "Dzalto"
+    },
+    "p2" : {
+      "id" : "2144",
+      "firstName" : "Ivan",
+      "lastName" : "Crnkovic"
+    },
+    "result" : "UNDECIDED",
+    "timeExtensionMin" : 0
+  }, {
+    "table" : 3,
+    "p1" : {
+      "id" : "121442313",
+      "firstName" : "Ivan",
+      "lastName" : "Soric"
+    },
+    "p2" : {
+      "id" : "12144",
+      "firstName" : "Kristina",
+      "lastName" : "Siketić"
+    },
+    "result" : "UNDECIDED",
+    "timeExtensionMin" : 0
+  }, {
+    "table" : 4,
+    "p1" : {
+      "id" : "14214",
+      "firstName" : "Karlo",
+      "lastName" : "Siketić"
+    },
+    "p2" : null,
+    "result" : "UNDECIDED",
+    "timeExtensionMin" : 0
+  } ],
+  "timer" : {
+    "running" : true,
+    "startEpochMillis" : 1768384915122,
+    "prepSeconds" : 180,
+    "roundSeconds" : 3300,
+    "paused" : false,
+    "pauseEpochMillis" : 0
+  }
+}

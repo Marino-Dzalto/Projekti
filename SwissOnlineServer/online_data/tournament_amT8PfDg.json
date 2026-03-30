@@ -1,0 +1,199 @@
+{
+  "key" : "amT8PfDg",
+  "name" : "Ygo 13.01.2026.",
+  "currentRound" : 5,
+  "playersById" : {
+    "0317332580" : {
+      "id" : "0317332580",
+      "firstName" : "Marin",
+      "lastName" : "Ovčariček"
+    },
+    "0303185335" : {
+      "id" : "0303185335",
+      "firstName" : "Špiro",
+      "lastName" : "Gabelić"
+    },
+    "0303183696" : {
+      "id" : "0303183696",
+      "firstName" : "Domagoj",
+      "lastName" : "Domičić"
+    },
+    "0321580278" : {
+      "id" : "0321580278",
+      "firstName" : "Jambrek",
+      "lastName" : "Mathias"
+    },
+    "2144" : {
+      "id" : "2144",
+      "firstName" : "Ivan",
+      "lastName" : "Crnkovic"
+    },
+    "0323599536" : {
+      "id" : "0323599536",
+      "firstName" : "Hrvoje",
+      "lastName" : "Galić"
+    },
+    "0304479513" : {
+      "id" : "0304479513",
+      "firstName" : "Marino",
+      "lastName" : "Dzalto"
+    },
+    "9999900000" : {
+      "id" : "9999900000",
+      "firstName" : "Šime",
+      "lastName" : "Šarec"
+    },
+    "0326104571" : {
+      "id" : "0326104571",
+      "firstName" : "Hrvoje",
+      "lastName" : "Blažek"
+    },
+    "0310345855" : {
+      "id" : "0310345855",
+      "firstName" : "Noel",
+      "lastName" : "Tihić"
+    },
+    "0319835747" : {
+      "id" : "0319835747",
+      "firstName" : "Roman",
+      "lastName" : "Mihalić"
+    },
+    "0324483938" : {
+      "id" : "0324483938",
+      "firstName" : "Ivan",
+      "lastName" : "Radman"
+    },
+    "9394480196" : {
+      "id" : "9394480196",
+      "firstName" : "Lovr0",
+      "lastName" : "Stanković"
+    },
+    "0323596729" : {
+      "id" : "0323596729",
+      "firstName" : "Ivan",
+      "lastName" : "Mešnjak"
+    },
+    "0325206113" : {
+      "id" : "0325206113",
+      "firstName" : "Luka",
+      "lastName" : "Milošević"
+    }
+  },
+  "currentPairings" : [ {
+    "table" : 1,
+    "p1" : {
+      "id" : "0326104571",
+      "firstName" : "Hrvoje",
+      "lastName" : "Blažek"
+    },
+    "p2" : {
+      "id" : "0317332580",
+      "firstName" : "Marin",
+      "lastName" : "Ovčariček"
+    },
+    "result" : "UNDECIDED",
+    "timeExtensionMin" : 0
+  }, {
+    "table" : 2,
+    "p1" : {
+      "id" : "0303185335",
+      "firstName" : "Špiro",
+      "lastName" : "Gabelić"
+    },
+    "p2" : {
+      "id" : "0304479513",
+      "firstName" : "Marino",
+      "lastName" : "Dzalto"
+    },
+    "result" : "UNDECIDED",
+    "timeExtensionMin" : 0
+  }, {
+    "table" : 3,
+    "p1" : {
+      "id" : "0319835747",
+      "firstName" : "Roman",
+      "lastName" : "Mihalić"
+    },
+    "p2" : {
+      "id" : "0323599536",
+      "firstName" : "Hrvoje",
+      "lastName" : "Galić"
+    },
+    "result" : "UNDECIDED",
+    "timeExtensionMin" : 0
+  }, {
+    "table" : 4,
+    "p1" : {
+      "id" : "9394480196",
+      "firstName" : "Lovr0",
+      "lastName" : "Stanković"
+    },
+    "p2" : {
+      "id" : "0325206113",
+      "firstName" : "Luka",
+      "lastName" : "Milošević"
+    },
+    "result" : "UNDECIDED",
+    "timeExtensionMin" : 0
+  }, {
+    "table" : 5,
+    "p1" : {
+      "id" : "0323596729",
+      "firstName" : "Ivan",
+      "lastName" : "Mešnjak"
+    },
+    "p2" : {
+      "id" : "0303183696",
+      "firstName" : "Domagoj",
+      "lastName" : "Domičić"
+    },
+    "result" : "UNDECIDED",
+    "timeExtensionMin" : 0
+  }, {
+    "table" : 6,
+    "p1" : {
+      "id" : "0310345855",
+      "firstName" : "Noel",
+      "lastName" : "Tihić"
+    },
+    "p2" : {
+      "id" : "2144",
+      "firstName" : "Ivan",
+      "lastName" : "Crnkovic"
+    },
+    "result" : "P1_WIN",
+    "timeExtensionMin" : 5
+  }, {
+    "table" : 7,
+    "p1" : {
+      "id" : "9999900000",
+      "firstName" : "Šime",
+      "lastName" : "Šarec"
+    },
+    "p2" : {
+      "id" : "0324483938",
+      "firstName" : "Ivan",
+      "lastName" : "Radman"
+    },
+    "result" : "UNDECIDED",
+    "timeExtensionMin" : 0
+  }, {
+    "table" : 8,
+    "p1" : {
+      "id" : "0321580278",
+      "firstName" : "Jambrek",
+      "lastName" : "Mathias"
+    },
+    "p2" : null,
+    "result" : "UNDECIDED",
+    "timeExtensionMin" : 0
+  } ],
+  "timer" : {
+    "running" : true,
+    "startEpochMillis" : 1768325582543,
+    "prepSeconds" : 180,
+    "roundSeconds" : 3300,
+    "paused" : false,
+    "pauseEpochMillis" : 0
+  }
+}

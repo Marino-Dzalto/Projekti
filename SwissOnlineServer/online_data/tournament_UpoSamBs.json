@@ -1,0 +1,112 @@
+{
+  "key" : "UpoSamBs",
+  "name" : "ygo",
+  "currentRound" : 1,
+  "playersById" : {
+    "0002" : {
+      "id" : "0002",
+      "firstName" : "Vid",
+      "lastName" : "Karlić"
+    },
+    "121442313" : {
+      "id" : "121442313",
+      "firstName" : "Ivan",
+      "lastName" : "Soric"
+    },
+    "0001" : {
+      "id" : "0001",
+      "firstName" : "Renato",
+      "lastName" : "Smijulj"
+    },
+    "14214" : {
+      "id" : "14214",
+      "firstName" : "Karlo",
+      "lastName" : "Siketić"
+    },
+    "81255923" : {
+      "id" : "81255923",
+      "firstName" : "Marin",
+      "lastName" : "Primorac"
+    },
+    "12144" : {
+      "id" : "12144",
+      "firstName" : "Kristina",
+      "lastName" : "Siketić"
+    },
+    "12566112" : {
+      "id" : "12566112",
+      "firstName" : "Josip",
+      "lastName" : "Periša"
+    },
+    "2141" : {
+      "id" : "2141",
+      "firstName" : "Luka",
+      "lastName" : "Forjan"
+    }
+  },
+  "currentPairings" : [ {
+    "table" : 1,
+    "p1" : {
+      "id" : "121442313",
+      "firstName" : "Ivan",
+      "lastName" : "Soric"
+    },
+    "p2" : {
+      "id" : "12144",
+      "firstName" : "Kristina",
+      "lastName" : "Siketić"
+    },
+    "result" : "UNDECIDED",
+    "timeExtensionMin" : 0
+  }, {
+    "table" : 2,
+    "p1" : {
+      "id" : "0001",
+      "firstName" : "Renato",
+      "lastName" : "Smijulj"
+    },
+    "p2" : {
+      "id" : "0002",
+      "firstName" : "Vid",
+      "lastName" : "Karlić"
+    },
+    "result" : "UNDECIDED",
+    "timeExtensionMin" : 0
+  }, {
+    "table" : 3,
+    "p1" : {
+      "id" : "14214",
+      "firstName" : "Karlo",
+      "lastName" : "Siketić"
+    },
+    "p2" : {
+      "id" : "81255923",
+      "firstName" : "Marin",
+      "lastName" : "Primorac"
+    },
+    "result" : "UNDECIDED",
+    "timeExtensionMin" : 0
+  }, {
+    "table" : 4,
+    "p1" : {
+      "id" : "2141",
+      "firstName" : "Luka",
+      "lastName" : "Forjan"
+    },
+    "p2" : {
+      "id" : "12566112",
+      "firstName" : "Josip",
+      "lastName" : "Periša"
+    },
+    "result" : "UNDECIDED",
+    "timeExtensionMin" : 0
+  } ],
+  "timer" : {
+    "running" : true,
+    "startEpochMillis" : 1767615243111,
+    "prepSeconds" : 180,
+    "roundSeconds" : 3300,
+    "paused" : false,
+    "pauseEpochMillis" : 0
+  }
+}

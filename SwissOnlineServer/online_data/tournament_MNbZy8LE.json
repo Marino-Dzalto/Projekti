@@ -1,0 +1,21 @@
+{
+  "key" : "MNbZy8LE",
+  "name" : "ygi",
+  "currentRound" : 0,
+  "playersById" : {
+    "14214" : {
+      "id" : "14214",
+      "firstName" : "Karlo",
+      "lastName" : "Siketić"
+    }
+  },
+  "currentPairings" : [ ],
+  "timer" : {
+    "running" : false,
+    "startEpochMillis" : 0,
+    "prepSeconds" : 180,
+    "roundSeconds" : 3300,
+    "paused" : false,
+    "pauseEpochMillis" : 0
+  }
+}

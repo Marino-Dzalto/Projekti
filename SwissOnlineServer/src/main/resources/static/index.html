@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="hr">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Swiss Online</title>
+  <link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+  <div class="wrap">
+
+    <header class="hero card">
+      <div class="heroLeft">
+        <div class="brand">
+          <img class="logo" src="/media/ygoLogo.png" alt="YGO logo" />
+          <div class="brandText">
+            <div class="title">Swiss Online</div>
+            <div class="small" id="sub">Unesi Tournament Key + Player ID</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="heroRight">
+        <div class="timer" id="timer">--:--</div>
+      </div>
+    </header>
+
+    <section class="card">
+      <div class="row">
+        <label class="field">
+          <span class="label">Tournament Key</span>
+          <input id="key" placeholder="8 znakova" autocomplete="off" />
+        </label>
+
+        <label class="field">
+          <span class="label">Player ID</span>
+          <input id="pid" placeholder="Tvoj ID" autocomplete="off" />
+        </label>
+
+        <div class="btnRow">
+          <button id="load" class="btn primary">Uđi</button>
+          <button id="live" class="btn ghost">Live: OFF</button>
+        </div>
+      </div>
+
+      <div class="small status" id="status"></div>
+    </section>
+
+    <section class="card section" id="mycard" style="display:none;">
+      <div class="h">
+        Moj stol
+        <span class="pill" id="mystatus">-</span>
+      </div>
+      <div id="myinfo" class="small"></div>
+    </section>
+
+    <section class="card section" id="reportcard" style="display:none;">
+      <div class="h">Prijavi rezultat <span class="pill subtle">samo tvoj meč</span></div>
+      <div class="row">
+        <label class="field grow">
+          <span class="label">Rezultat</span>
+          <select id="reportSelect">
+            <option value="">-- odaberi --</option>
+          </select>
+        </label>
+
+        <div class="btnRow">
+          <button id="sendReport" class="btn ghost">Pošalji</button>
+        </div>
+      </div>
+      <div class="small status" id="reportStatus"></div>
+    </section>
+
+    
+    <section class="card section" id="judgecard" style="display:none;">
+      <div class="h">Judge Call <span class="pill subtle">tvoj stol</span></div>
+
+      <div id="judgeIdle">
+        <div class="small">Ako treba pomoć suca / admina za tvoj stol, pritisni gumb.</div>
+        <div class="btnRow" style="margin-top:10px;">
+          <button id="judgeBtn" class="btn danger">JUDGE CALL!</button>
+        </div>
+      </div>
+
+      <div id="judgeConfirm" style="display:none;">
+        <div class="small">Jeste li sigurni?</div>
+        <div class="btnRow" style="margin-top:10px;">
+          <button id="judgeYes" class="btn danger">DA</button>
+          <button id="judgeNo" class="btn ghost">NE</button>
+        </div>
+      </div>
+
+      <div id="judgeActive" style="display:none;">
+        <div class="small">Poziv je poslan. Admin vidi tvoj stol označen crveno.</div>
+        <div class="btnRow" style="margin-top:10px;">
+          <button id="judgeEnd" class="btn ghost">END JUDGE CALL</button>
+        </div>
+      </div>
+
+      <div class="small status" id="judgeStatus"></div>
+    </section>
+
+
+    <section class="card section" id="paircard" style="display:none;">
+      <div class="h">
+        Pairings
+        <span class="pill" id="roundpill">Runda: -</span>
+      </div>
+
+      <div class="tableWrap">
+        <table id="pairings">
+          <thead>
+            <tr>
+              <th>Stol</th>
+              <th>Igrač 1</th>
+              <th>Igrač 2</th>
+              <th>Rezultat</th>
+              <th>Ext.</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <footer class="foot small">
+      Tip: uključi <b>Live</b> za automatsko ažuriranje (bez refresha).
+    </footer>
+
+  </div>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>

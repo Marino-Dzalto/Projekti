@@ -1,0 +1,88 @@
+{
+  "key" : "HaBjTRtb",
+  "name" : "YGO",
+  "currentRound" : 3,
+  "playersById" : {
+    "214111" : {
+      "id" : "214111",
+      "firstName" : "Noel",
+      "lastName" : "Brajkovic"
+    },
+    "0002" : {
+      "id" : "0002",
+      "firstName" : "Vid",
+      "lastName" : "Karlić"
+    },
+    "0001" : {
+      "id" : "0001",
+      "firstName" : "Renato",
+      "lastName" : "Smijulj"
+    },
+    "99999999" : {
+      "id" : "99999999",
+      "firstName" : "Lovro",
+      "lastName" : "Glava"
+    },
+    "0304479513" : {
+      "id" : "0304479513",
+      "firstName" : "Marino",
+      "lastName" : "Dzalto"
+    },
+    "9241124142" : {
+      "id" : "9241124142",
+      "firstName" : "Vid",
+      "lastName" : "Maršić"
+    }
+  },
+  "currentPairings" : [ {
+    "table" : 1,
+    "p1" : {
+      "id" : "0001",
+      "firstName" : "Renato",
+      "lastName" : "Smijulj"
+    },
+    "p2" : {
+      "id" : "0002",
+      "firstName" : "Vid",
+      "lastName" : "Karlić"
+    },
+    "result" : "P1_WIN",
+    "timeExtensionMin" : 0
+  }, {
+    "table" : 2,
+    "p1" : {
+      "id" : "0304479513",
+      "firstName" : "Marino",
+      "lastName" : "Dzalto"
+    },
+    "p2" : {
+      "id" : "214111",
+      "firstName" : "Noel",
+      "lastName" : "Brajkovic"
+    },
+    "result" : "P2_WIN",
+    "timeExtensionMin" : 0
+  }, {
+    "table" : 3,
+    "p1" : {
+      "id" : "99999999",
+      "firstName" : "Lovro",
+      "lastName" : "Glava"
+    },
+    "p2" : {
+      "id" : "9241124142",
+      "firstName" : "Vid",
+      "lastName" : "Maršić"
+    },
+    "result" : "P1_WIN",
+    "timeExtensionMin" : 0
+  } ],
+  "timer" : {
+    "running" : true,
+    "startEpochMillis" : 1767611683773,
+    "prepSeconds" : 180,
+    "roundSeconds" : 120,
+    "paused" : false,
+    "pauseEpochMillis" : 0
+  }
+}
