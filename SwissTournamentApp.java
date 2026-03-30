@@ -18,6 +18,12 @@ import java.nio.charset.StandardCharsets;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonNull;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 public class SwissTournamentApp {
 
@@ -1930,7 +1936,21 @@ public boolean applyWebReport(WebReportEntry rep) {
     return true;
 }
                 // ===== ONLINE SYNC (player web view) =====
-        private final OnlineSyncClient online = new OnlineSyncClient("http://localhost:8080");
+        private final OnlineSyncClient online = new OnlineSyncClient(readServerUrl());
+
+        private static String readServerUrl() {
+            for (String name : new String[]{"config.local.properties", "config.properties"}) {
+                File f = new File(name);
+                if (!f.exists()) continue;
+                try (InputStream in = new FileInputStream(f)) {
+                    Properties props = new Properties();
+                    props.load(in);
+                    String url = props.getProperty("server.url", "").trim();
+                    if (!url.isEmpty()) return url;
+                } catch (Exception ignored) {}
+            }
+            return "http://localhost:8080";
+        }
 
         private void onlineCreateTournamentIfPossible() {
             try {
@@ -2987,59 +3007,53 @@ lblTimer = new JLabel("Timer: --:--");
         static class OnlineSyncClient {
     private final String baseUrl;
     private final HttpClient client = HttpClient.newHttpClient();
+    private final Gson gson = new Gson();
 
     OnlineSyncClient(String baseUrl) {
         this.baseUrl = baseUrl.endsWith("/") ? baseUrl.substring(0, baseUrl.length() - 1) : baseUrl;
     }
 
     void createTournament(String key, String name) throws Exception {
-        String json = "{\"key\":\"" + esc(key) + "\",\"name\":\"" + esc(name) + "\"}";
-        postJson("/api/tournaments", json);
+        JsonObject body = new JsonObject();
+        body.addProperty("key", key);
+        body.addProperty("name", name);
+        postJson("/api/tournaments", gson.toJson(body));
     }
 
     void upsertPlayers(String key, List<Player> players) throws Exception {
-        StringBuilder sb = new StringBuilder();
-        sb.append("{\"players\":[");
-        boolean first = true;
+        JsonArray arr = new JsonArray();
         for (Player p : players) {
-            if (p == null) continue;
-            if (p.isGuest()) continue; // gostove ne šaljemo na web
-            if (!first) sb.append(",");
-            first = false;
-            sb.append("{\"id\":\"").append(esc(p.getId())).append("\",");
-            sb.append("\"firstName\":\"").append(esc(p.getFirstName())).append("\",");
-            sb.append("\"lastName\":\"").append(esc(p.getLastName())).append("\"}");
+            if (p == null || p.isGuest()) continue;
+            arr.add(playerJson(p));
         }
-        sb.append("]}");
-        putJson("/api/tournaments/" + url(key) + "/players", sb.toString());
+        JsonObject body = new JsonObject();
+        body.add("players", arr);
+        putJson("/api/tournaments/" + url(key) + "/players", gson.toJson(body));
     }
 
     void publishPairings(String key, int roundNumber, List<Match> matches) throws Exception {
-        StringBuilder sb = new StringBuilder();
-        sb.append("{\"roundNumber\":").append(roundNumber).append(",\"matches\":[");
-        boolean first = true;
+        JsonArray arr = new JsonArray();
         for (Match m : matches) {
             if (m == null) continue;
-            if (!first) sb.append(",");
-            first = false;
-
-            sb.append("{\"table\":").append(m.getTableNumber()).append(",");
-            sb.append("\"p1\":").append(playerJson(m.getP1())).append(",");
-            if (m.getP2() == null) sb.append("\"p2\":null,");
-            else sb.append("\"p2\":").append(playerJson(m.getP2())).append(",");
-
-            String res = (m.getResult() == null) ? "UNDECIDED" : m.getResult().name();
-            sb.append("\"result\":\"").append(esc(res)).append("\",");
-            sb.append("\"timeExtensionMin\":").append(m.getTimeExtensionMinutes());
-            sb.append("}");
+            JsonObject obj = new JsonObject();
+            obj.addProperty("table", m.getTableNumber());
+            obj.add("p1", playerJson(m.getP1()));
+            obj.add("p2", m.getP2() == null ? JsonNull.INSTANCE : playerJson(m.getP2()));
+            obj.addProperty("result", m.getResult() == null ? "UNDECIDED" : m.getResult().name());
+            obj.addProperty("timeExtensionMin", m.getTimeExtensionMinutes());
+            arr.add(obj);
         }
-        sb.append("]}");
-        putJson("/api/tournaments/" + url(key) + "/pairings", sb.toString());
+        JsonObject body = new JsonObject();
+        body.addProperty("roundNumber", roundNumber);
+        body.add("matches", arr);
+        putJson("/api/tournaments/" + url(key) + "/pairings", gson.toJson(body));
     }
 
     void startTimer(String key, int prepSeconds, int roundSeconds) throws Exception {
-        String json = "{\"prepSeconds\":" + prepSeconds + ",\"roundSeconds\":" + roundSeconds + "}";
-        postJson("/api/tournaments/" + url(key) + "/timer/start", json);
+        JsonObject body = new JsonObject();
+        body.addProperty("prepSeconds", prepSeconds);
+        body.addProperty("roundSeconds", roundSeconds);
+        postJson("/api/tournaments/" + url(key) + "/timer/start", gson.toJson(body));
     }
 
     void stopTimer(String key) throws Exception {
@@ -3055,47 +3069,49 @@ lblTimer = new JLabel("Timer: --:--");
         return parseReportsJson(body);
     }
 
-    // ---------- helpers ----------
-    
-        // ---- Judge calls (player -> admin assistance) ----
-        // Returns list of table numbers which currently have an active judge call.
-        List<Integer> getJudgeCalls(String key) throws Exception {
-            HttpRequest req = HttpRequest.newBuilder()
-                    .uri(new URI(baseUrl + "/api/tournaments/" + url(key) + "/judgecalls"))
-                    .header("Accept", "application/json")
-                    .GET()
-                    .build();
-            HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString());
-            if (resp.statusCode() / 100 != 2) return Collections.emptyList();
+    // ---- Judge calls (player -> admin assistance) ----
+    List<Integer> getJudgeCalls(String key) throws Exception {
+        HttpRequest req = HttpRequest.newBuilder()
+                .uri(new URI(baseUrl + "/api/tournaments/" + url(key) + "/judgecalls"))
+                .header("Accept", "application/json")
+                .GET()
+                .build();
+        HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString());
+        if (resp.statusCode() / 100 != 2) return Collections.emptyList();
 
-            // very small JSON: {"tournamentKey":"...","tables":[1,2,...]}
+        List<Integer> out = new ArrayList<>();
+        try {
             String body = resp.body() == null ? "" : resp.body();
-            List<Integer> out = new ArrayList<>();
-            int i = body.indexOf("\"tables\"");
-            if (i < 0) return out;
-            int lbr = body.indexOf('[', i);
-            int rbr = body.indexOf(']', i);
-            if (lbr < 0 || rbr < 0 || rbr <= lbr) return out;
-            String inside = body.substring(lbr + 1, rbr).trim();
-            if (inside.isEmpty()) return out;
-            for (String part : inside.split(",")) {
-                part = part.trim();
-                if (part.isEmpty()) continue;
-                try { out.add(Integer.parseInt(part)); } catch (Exception ignored) {}
+            JsonObject obj = JsonParser.parseString(body).getAsJsonObject();
+            JsonArray tables = obj.getAsJsonArray("tables");
+            if (tables != null) {
+                for (JsonElement el : tables) {
+                    out.add(el.getAsInt());
+                }
             }
-            return out;
-        }
+        } catch (Exception ignored) {}
+        return out;
+    }
 
-        // Clears judge call for a specific table (admin action).
-        void clearJudgeCall(String key, int table) throws Exception {
-            String json = "{\"table\":" + table + "}";
-            postJson("/api/tournaments/" + url(key) + "/judgecall/clear", json);
-        }
+    // Clears judge call for a specific table (admin action).
+    void clearJudgeCall(String key, int table) throws Exception {
+        JsonObject body = new JsonObject();
+        body.addProperty("table", table);
+        postJson("/api/tournaments/" + url(key) + "/judgecall/clear", gson.toJson(body));
+    }
 
-private String playerJson(Player p) {
-        if (p == null) return "{\"id\":\"\",\"firstName\":\"\",\"lastName\":\"\"}";
-        String id = p.isGuest() ? "000000000" : p.getId();
-        return "{\"id\":\"" + esc(id) + "\",\"firstName\":\"" + esc(p.getFirstName()) + "\",\"lastName\":\"" + esc(p.getLastName()) + "\"}";
+    private JsonObject playerJson(Player p) {
+        JsonObject obj = new JsonObject();
+        if (p == null) {
+            obj.addProperty("id", "");
+            obj.addProperty("firstName", "");
+            obj.addProperty("lastName", "");
+        } else {
+            obj.addProperty("id", p.isGuest() ? "000000000" : p.getId());
+            obj.addProperty("firstName", p.getFirstName());
+            obj.addProperty("lastName", p.getLastName());
+        }
+        return obj;
     }
 
     private void postJson(String path, String json) throws Exception {
@@ -3138,92 +3154,24 @@ private String playerJson(Player p) {
         return URLEncoder.encode(s == null ? "" : s, StandardCharsets.UTF_8);
     }
 
-    private String esc(String s) {
-        if (s == null) return "";
-        return s.replace("\\", "\\\\").replace("\"", "\\\"");
-    }
-
-    // =========================================
-    // Minimalni parser za JSON array reportova
-    // Očekuje: [{"table":1,"playerId":"0001","result":"P1_WIN","timeEpochMillis":...}, ...]
-    // =========================================
     private List<WebReportEntry> parseReportsJson(String json) {
         List<WebReportEntry> out = new ArrayList<>();
-        if (json == null) return out;
-
-        String s = json.trim();
-        if (s.isEmpty() || s.equals("[]")) return out;
-
-        // mora biti array
-        if (!s.startsWith("[") || !s.endsWith("]")) return out;
-
-        s = s.substring(1, s.length() - 1).trim(); // remove [ ]
-        if (s.isEmpty()) return out;
-
-        // split po "},{" (najjednostavnije)
-        String[] parts = s.split("\\},\\s*\\{");
-        for (String part : parts) {
-            String obj = part.trim();
-            if (!obj.startsWith("{")) obj = "{" + obj;
-            if (!obj.endsWith("}")) obj = obj + "}";
-
-            WebReportEntry e = new WebReportEntry();
-            e.table = extractInt(obj, "\"table\"");
-            e.playerId = extractString(obj, "\"playerId\"");
-            e.result = extractString(obj, "\"result\"");
-            e.timeEpochMillis = extractLong(obj, "\"timeEpochMillis\"");
-
-            if (e.table > 0 && e.playerId != null && !e.playerId.isBlank()) {
-                out.add(e);
+        if (json == null || json.isBlank()) return out;
+        try {
+            JsonArray arr = JsonParser.parseString(json).getAsJsonArray();
+            for (JsonElement el : arr) {
+                JsonObject obj = el.getAsJsonObject();
+                WebReportEntry e = new WebReportEntry();
+                e.table          = obj.has("table")           ? obj.get("table").getAsInt()              : 0;
+                e.playerId       = obj.has("playerId")        ? obj.get("playerId").getAsString()        : null;
+                e.result         = obj.has("result")          ? obj.get("result").getAsString()          : null;
+                e.timeEpochMillis= obj.has("timeEpochMillis") ? obj.get("timeEpochMillis").getAsLong()   : 0L;
+                if (e.table > 0 && e.playerId != null && !e.playerId.isBlank()) {
+                    out.add(e);
+                }
             }
-        }
+        } catch (Exception ignored) {}
         return out;
-    }
-
-    private int extractInt(String obj, String key) {
-        try {
-            int idx = obj.indexOf(key);
-            if (idx < 0) return 0;
-            int colon = obj.indexOf(':', idx);
-            int end = findValueEnd(obj, colon + 1);
-            return Integer.parseInt(obj.substring(colon + 1, end).trim());
-        } catch (Exception ex) {
-            return 0;
-        }
-    }
-
-    private long extractLong(String obj, String key) {
-        try {
-            int idx = obj.indexOf(key);
-            if (idx < 0) return 0L;
-            int colon = obj.indexOf(':', idx);
-            int end = findValueEnd(obj, colon + 1);
-            return Long.parseLong(obj.substring(colon + 1, end).trim());
-        } catch (Exception ex) {
-            return 0L;
-        }
-    }
-
-    private String extractString(String obj, String key) {
-        try {
-            int idx = obj.indexOf(key);
-            if (idx < 0) return null;
-            int colon = obj.indexOf(':', idx);
-            int q1 = obj.indexOf('"', colon + 1);
-            int q2 = obj.indexOf('"', q1 + 1);
-            if (q1 < 0 || q2 < 0) return null;
-            return obj.substring(q1 + 1, q2);
-        } catch (Exception ex) {
-            return null;
-        }
-    }
-
-    private int findValueEnd(String obj, int start) {
-        int comma = obj.indexOf(',', start);
-        int brace = obj.indexOf('}', start);
-        if (comma < 0) return brace < 0 ? obj.length() : brace;
-        if (brace < 0) return comma;
-        return Math.min(comma, brace);
     }
 }
 
