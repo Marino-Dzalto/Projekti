@@ -13,6 +13,13 @@ SwissOnlineServer/.mvn/wrapper/maven-wrapper.jar
 players_db.txt
 tournament_history/
 
+# Runtime server data (tournament state, not source code)
+SwissOnlineServer/online_data/
+
+# Stray files created by bad CLI invocations
+SwissOnlineServer/-H
+SwissOnlineServer/-d
+
 # Logs
 *.log
 ngrok.log
