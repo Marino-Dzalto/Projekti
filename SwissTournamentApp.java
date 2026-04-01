@@ -42,9 +42,23 @@ public class SwissTournamentApp {
     static final Color UI_JUDGE     = new Color(0xFFF0D4);
     static final Color UI_TOOLBAR   = new Color(0xFCFCFD);
 
+    // ====== KONSTANTE ======
+    static final class TournamentConstants {
+        static final String PLAYERS_DB_FILE   = "players_db.txt";
+        static final String HISTORY_DIR_NAME  = "tournament_history";
+        static final String PLAYER_DB_DELIMITER = "\t";
+
+        static final double MIN_WIN_PCT        = 0.33;
+        static final int    DEFAULT_PREP_SECONDS  = 3 * 60;
+        static final int    DEFAULT_ROUND_SECONDS = 55 * 60;
+        static final int    MAX_PLAYERS        = 100;
+
+        private TournamentConstants() {}
+    }
+
     // ====== PERSISTENCIJA BAZE IGRAČA ======
-    private static final String PLAYERS_DB_FILE = "players_db.txt";
-    private static final String HISTORY_DIR_NAME = "tournament_history";
+    private static final String PLAYERS_DB_FILE = TournamentConstants.PLAYERS_DB_FILE;
+    private static final String HISTORY_DIR_NAME = TournamentConstants.HISTORY_DIR_NAME;
 
     private static List<Player> loadPlayerDatabase() {
         List<Player> list = new ArrayList<>();
@@ -318,7 +332,7 @@ public static void main(String[] args) {
         private int finishedRounds = 0;
         private boolean roundInProgress = false;
 
-        public static final int MAX_PLAYERS = 100;
+        public static final int MAX_PLAYERS = TournamentConstants.MAX_PLAYERS;
 
         public Tournament(String name) {
             this.name = name;
@@ -412,10 +426,10 @@ public static void main(String[] args) {
             for (Player p : players) {
                 List<Player> opps = rec.getOrDefault(p, new Record()).opponents;
                 if (opps.isEmpty()) {
-                    omw.put(p, 0.33);
+                    omw.put(p, TournamentConstants.MIN_WIN_PCT);
                 } else {
                     double avg = 0.0;
-                    for (Player o : opps) avg += mwPct.getOrDefault(o, 0.33);
+                    for (Player o : opps) avg += mwPct.getOrDefault(o, TournamentConstants.MIN_WIN_PCT);
                     avg /= opps.size();
                     omw.put(p, clampWinPct(avg));
                 }
@@ -426,10 +440,10 @@ public static void main(String[] args) {
             for (Player p : players) {
                 List<Player> opps = rec.getOrDefault(p, new Record()).opponents;
                 if (opps.isEmpty()) {
-                    oow.put(p, 0.33);
+                    oow.put(p, TournamentConstants.MIN_WIN_PCT);
                 } else {
                     double avg = 0.0;
-                    for (Player o : opps) avg += omw.getOrDefault(o, 0.33);
+                    for (Player o : opps) avg += omw.getOrDefault(o, TournamentConstants.MIN_WIN_PCT);
                     avg /= opps.size();
                     oow.put(p, clampWinPct(avg));
                 }
@@ -442,8 +456,8 @@ public static void main(String[] args) {
                 s.firstName = p.getFirstName();
                 s.lastName = p.getLastName();
                 s.points = getTotalPointsUpToRound(p, roundNumber);
-                s.oppMatchWinPct = omw.getOrDefault(p, 0.33);
-                s.oppOppMatchWinPct = oow.getOrDefault(p, 0.33);
+                s.oppMatchWinPct = omw.getOrDefault(p, TournamentConstants.MIN_WIN_PCT);
+                s.oppOppMatchWinPct = oow.getOrDefault(p, TournamentConstants.MIN_WIN_PCT);
                 s.tieBreakerCode = formatTieBreakerCode(s.points, s.oppMatchWinPct, s.oppOppMatchWinPct);
                 snap.add(s);
             }
@@ -474,7 +488,7 @@ public static void main(String[] args) {
 
             double matchWinPct() {
                 int played = wins + draws + losses;
-                if (played <= 0) return 0.33;
+                if (played <= 0) return TournamentConstants.MIN_WIN_PCT;
                 // Win=1, Draw=0.5
                 return (wins + 0.5 * draws) / played;
             }
@@ -526,8 +540,8 @@ public static void main(String[] args) {
         }
 
         private static double clampWinPct(double v) {
-            if (Double.isNaN(v) || Double.isInfinite(v)) return 0.33;
-            if (v < 0.33) return 0.33;
+            if (Double.isNaN(v) || Double.isInfinite(v)) return TournamentConstants.MIN_WIN_PCT;
+            if (v < TournamentConstants.MIN_WIN_PCT) return TournamentConstants.MIN_WIN_PCT;
             if (v > 1.0) return 1.0;
             return v;
         }
@@ -1861,8 +1875,8 @@ public static void main(String[] args) {
         private javax.swing.Timer judgePollTimer;
         private JButton btnEndJudgeCall;
         private Set<Integer> judgeCallTables = new java.util.HashSet<>();
-        private final int prepSecondsDefault = 3 * 60;
-        private int roundSecondsDefault = 55 * 60;
+        private final int prepSecondsDefault = TournamentConstants.DEFAULT_PREP_SECONDS;
+        private int roundSecondsDefault = TournamentConstants.DEFAULT_ROUND_SECONDS;
         private int remainingPrepSeconds = 0;
         private int remainingRoundSeconds = 0;
 

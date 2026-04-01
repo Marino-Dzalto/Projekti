@@ -1,6 +1,7 @@
 package com.swissonline.api;
 
 import com.swissonline.api.dto.*;
+import com.swissonline.core.TimerDefaults;
 import com.swissonline.core.TournamentStore;
 import com.swissonline.core.model.*;
 import org.springframework.http.ResponseEntity;
@@ -142,8 +143,8 @@ public class TournamentController {
     st.timer.running = true;
     st.timer.paused = false;
     st.timer.startEpochMillis = System.currentTimeMillis();
-    st.timer.prepSeconds = req.prepSeconds > 0 ? req.prepSeconds : 180;
-    st.timer.roundSeconds = req.roundSeconds > 0 ? req.roundSeconds : (55 * 60);
+    st.timer.prepSeconds  = req.prepSeconds  > 0 ? req.prepSeconds  : TimerDefaults.PREP_SECONDS;
+    st.timer.roundSeconds = req.roundSeconds > 0 ? req.roundSeconds : TimerDefaults.ROUND_SECONDS;
 
     store.persist(st);
     store.broadcast(key, "TIMER_STARTED", st.timer);
