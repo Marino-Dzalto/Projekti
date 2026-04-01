@@ -332,6 +332,11 @@ public static void main(String[] args) {
         private int finishedRounds = 0;
         private boolean roundInProgress = false;
 
+        // Cache koji parovi su odigrali jedan protiv drugog (id1:id2, uvijek manji id prvi)
+        private final Set<String> playedPairs = new HashSet<>();
+        // Cache koji igrači su imali bye
+        private final Set<String> byePlayers = new HashSet<>();
+
         public static final int MAX_PLAYERS = TournamentConstants.MAX_PLAYERS;
 
         public Tournament(String name) {
@@ -366,26 +371,29 @@ public static void main(String[] args) {
         }
 
         private boolean hasHadBye(Player p) {
-            for (List<Match> round : allRounds) {
-                for (Match m : round) {
-                    if (m.isBye() && m.getP1().equals(p) && m.getResult() == MatchResult.P1_WIN) return true;
-                }
-            }
-            return false;
+            return byePlayers.contains(p.getId());
         }
 
         private boolean havePlayedEachOther(Player a, Player b) {
+            return playedPairs.contains(pairKey(a.getId(), b.getId()));
+        }
+
+        private static String pairKey(String id1, String id2) {
+            return id1.compareTo(id2) <= 0 ? id1 + ":" + id2 : id2 + ":" + id1;
+        }
+
+        private void rebuildPairingCache() {
+            playedPairs.clear();
+            byePlayers.clear();
             for (List<Match> round : allRounds) {
                 for (Match m : round) {
-                    if (!m.isBye()) {
-                        if ((m.getP1().equals(a) && m.getP2().equals(b)) ||
-                                (m.getP1().equals(b) && m.getP2().equals(a))) {
-                            return true;
-                        }
+                    if (m.isBye()) {
+                        if (m.getResult() == MatchResult.P1_WIN) byePlayers.add(m.getP1().getId());
+                    } else {
+                        playedPairs.add(pairKey(m.getP1().getId(), m.getP2().getId()));
                     }
                 }
             }
-            return false;
         }
 
         public int getCurrentTotalPoints(Player p) {
@@ -651,6 +659,7 @@ public static void main(String[] args) {
             if (allRounds.isEmpty()) throw new IllegalStateException("Nema rundi za RePair.");
 
             allRounds.remove(allRounds.size() - 1);
+            rebuildPairingCache();
             List<Player> active = getActivePlayers();
             List<Match> matches = generateSwissPairings(active);
             currentRoundMatches = matches;
@@ -662,6 +671,7 @@ public static void main(String[] args) {
             if (!roundInProgress) throw new IllegalStateException("Nema aktivne runde.");
             finishedRounds++;
             roundInProgress = false;
+            rebuildPairingCache();
         }
 
         public boolean allResultsEntered() {
@@ -680,6 +690,7 @@ public static void main(String[] args) {
             } else {
                 if (finishedRounds > 0) finishedRounds--;
             }
+            rebuildPairingCache();
         }
     }
 
