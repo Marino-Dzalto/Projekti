@@ -11,6 +11,8 @@ import java.io.File;
 import java.nio.file.Files;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @Component
 public class TournamentStore {
@@ -20,6 +22,11 @@ public class TournamentStore {
   private final Map<String, TournamentState> tournaments = new ConcurrentHashMap<>();
   private final Map<String, List<SseEmitter>> emittersByKey = new ConcurrentHashMap<>();
   private final ObjectMapper om = new ObjectMapper();
+  private final ExecutorService persistExecutor = Executors.newSingleThreadExecutor(r -> {
+      Thread t = new Thread(r, "tournament-persist");
+      t.setDaemon(true);
+      return t;
+  });
 
   private final File dataDir;
 
@@ -47,13 +54,16 @@ public class TournamentStore {
     return tournaments.get(key);
   }
 
-  public synchronized void persist(TournamentState st) {
-    try {
-      File f = new File(dataDir, "tournament_" + safe(keyOrEmpty(st.key)) + ".json");
-      om.writerWithDefaultPrettyPrinter().writeValue(f, st);
-    } catch (Exception e) {
-      log.error("Failed to persist tournament '{}': {}", st.key, e.getMessage(), e);
-    }
+  public void persist(TournamentState st) {
+    final String key = st.key;
+    persistExecutor.submit(() -> {
+      try {
+        File f = new File(dataDir, "tournament_" + safe(keyOrEmpty(key)) + ".json");
+        om.writerWithDefaultPrettyPrinter().writeValue(f, st);
+      } catch (Exception e) {
+        log.error("Failed to persist tournament '{}': {}", key, e.getMessage(), e);
+      }
+    });
   }
 
   private String safe(String s) {
