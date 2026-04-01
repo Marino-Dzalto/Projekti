@@ -3167,16 +3167,21 @@ lblTimer = new JLabel("Timer: --:--");
         return obj;
     }
 
+    private String send(HttpRequest req, String method, String path) throws Exception {
+        HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString());
+        if (resp.statusCode() / 100 != 2) {
+            throw new RuntimeException(method + " " + path + " -> HTTP " + resp.statusCode() + ": " + resp.body());
+        }
+        return resp.body();
+    }
+
     private void postJson(String path, String json) throws Exception {
         HttpRequest req = HttpRequest.newBuilder()
                 .uri(new URI(baseUrl + path))
                 .header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(json))
                 .build();
-        HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString());
-        if (resp.statusCode() / 100 != 2) {
-            throw new RuntimeException("POST " + path + " -> HTTP " + resp.statusCode() + ": " + resp.body());
-        }
+        send(req, "POST", path);
     }
 
     private void putJson(String path, String json) throws Exception {
@@ -3185,10 +3190,7 @@ lblTimer = new JLabel("Timer: --:--");
                 .header("Content-Type", "application/json")
                 .PUT(HttpRequest.BodyPublishers.ofString(json))
                 .build();
-        HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString());
-        if (resp.statusCode() / 100 != 2) {
-            throw new RuntimeException("PUT " + path + " -> HTTP " + resp.statusCode() + ": " + resp.body());
-        }
+        send(req, "PUT", path);
     }
 
     private String getText(String path) throws Exception {
@@ -3196,11 +3198,7 @@ lblTimer = new JLabel("Timer: --:--");
                 .uri(new URI(baseUrl + path))
                 .GET()
                 .build();
-        HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString());
-        if (resp.statusCode() / 100 != 2) {
-            throw new RuntimeException("GET " + path + " -> HTTP " + resp.statusCode() + ": " + resp.body());
-        }
-        return resp.body();
+        return send(req, "GET", path);
     }
 
     private String url(String s) {
