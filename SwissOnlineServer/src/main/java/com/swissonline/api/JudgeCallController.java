@@ -33,29 +33,25 @@ public class JudgeCallController {
         public List<Integer> tables = new ArrayList<>();
     }
 
-    private TournamentState mustGet(String key){
-        // IMPORTANT: prilagodi ovoj liniji ako ti se metoda zove drugačije
-        TournamentState st = store.get(key);
-        return st;
-    }
-
     @GetMapping("/judgecalls")
     public ResponseEntity<JudgeCallsResponse> getJudgeCalls(@PathVariable("key") String key) {
-        TournamentState st = mustGet(key);
-        if(st == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        TournamentState st = store.get(key);
+        if (st == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         return ResponseEntity.ok(toResp(key, st));
     }
 
     @PostMapping("/judgecall/start")
     public ResponseEntity<JudgeCallsResponse> startJudgeCall(@PathVariable("key") String key,
                                                              @RequestBody PlayerIdRequest req) {
-        TournamentState st = mustGet(key);
-        if(st == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        if (req == null || req.playerId == null || req.playerId.isBlank()) {
+            return ResponseEntity.badRequest().build();
+        }
+        TournamentState st = store.get(key);
+        if (st == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 
-        MatchInfo match = findPlayersMatch(st, safe(req.playerId));
+        MatchInfo match = findPlayersMatch(st, req.playerId.trim());
         if (match == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 
-        // Ako je meč već odlučen, ne dozvoljavamo judge call
         if (match.result != null && !match.result.equals("UNDECIDED")) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
@@ -68,10 +64,13 @@ public class JudgeCallController {
     @PostMapping("/judgecall/end")
     public ResponseEntity<JudgeCallsResponse> endJudgeCall(@PathVariable("key") String key,
                                                            @RequestBody PlayerIdRequest req) {
-        TournamentState st = mustGet(key);
-        if(st == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        if (req == null || req.playerId == null || req.playerId.isBlank()) {
+            return ResponseEntity.badRequest().build();
+        }
+        TournamentState st = store.get(key);
+        if (st == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 
-        Integer table = findPlayersTable(st, safe(req.playerId));
+        Integer table = findPlayersTable(st, req.playerId.trim());
         if (table == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 
         st.judgeCallTables.remove(table);
@@ -82,8 +81,8 @@ public class JudgeCallController {
     @PostMapping("/judgecall/clear")
     public ResponseEntity<JudgeCallsResponse> clearJudgeCall(@PathVariable("key") String key,
                                                              @RequestBody TableRequest req) {
-        TournamentState st = mustGet(key);
-        if(st == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        TournamentState st = store.get(key);
+        if (st == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 
         st.judgeCallTables.remove(req.table);
         broadcast(st);
@@ -109,7 +108,7 @@ public class JudgeCallController {
     }
 
     private MatchInfo findPlayersMatch(TournamentState st, String playerId) {
-        if (playerId == null || playerId.isBlank()) return null;
+        if (playerId == null || playerId.isBlank() || st.currentPairings == null) return null;
         for (MatchInfo m : st.currentPairings) {
             if (m == null) continue;
             if (m.p1 != null && playerId.equals(m.p1.id)) return m;
@@ -122,6 +121,4 @@ public class JudgeCallController {
         MatchInfo m = findPlayersMatch(st, playerId);
         return m == null ? null : m.table;
     }
-
-    private String safe(String s) { return s == null ? "" : s.trim(); }
 }
