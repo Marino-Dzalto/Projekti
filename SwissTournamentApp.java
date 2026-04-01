@@ -66,7 +66,7 @@ public class SwissTournamentApp {
                 list.add(p);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println("[ERROR] Failed to load player database from '" + PLAYERS_DB_FILE + "': " + e.getMessage());
         }
         return list;
     }
@@ -75,11 +75,14 @@ public class SwissTournamentApp {
         File f = new File(PLAYERS_DB_FILE);
         try (PrintWriter pw = new PrintWriter(new FileWriter(f))) {
             for (Player p : db) {
-                if (p.isGuest()) continue; // goste ne spremamo
+                if (p.isGuest()) continue;
                 pw.println(p.getId() + "\t" + p.getFirstName() + "\t" + p.getLastName());
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println("[ERROR] Failed to save player database to '" + PLAYERS_DB_FILE + "': " + e.getMessage());
+            JOptionPane.showMessageDialog(null,
+                "Greška pri spremanju baze igrača:\n" + e.getMessage(),
+                "Greška", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -731,7 +734,10 @@ public static void main(String[] args) {
                     pw.println("TOPCUT_END");
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                System.err.println("[ERROR] Failed to save tournament history to '" + file.getName() + "': " + e.getMessage());
+                JOptionPane.showMessageDialog(null,
+                    "Greška pri spremanju historije turnira:\n" + e.getMessage(),
+                    "Greška", JOptionPane.ERROR_MESSAGE);
             }
         }
 

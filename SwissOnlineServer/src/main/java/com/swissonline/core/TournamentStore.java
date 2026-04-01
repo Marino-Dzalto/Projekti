@@ -2,6 +2,8 @@ package com.swissonline.core;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.swissonline.core.model.TournamentState;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -12,6 +14,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 public class TournamentStore {
+
+  private static final Logger log = LoggerFactory.getLogger(TournamentStore.class);
 
   private final Map<String, TournamentState> tournaments = new ConcurrentHashMap<>();
   private final Map<String, List<SseEmitter>> emittersByKey = new ConcurrentHashMap<>();
@@ -48,7 +52,7 @@ public class TournamentStore {
       File f = new File(dataDir, "tournament_" + safe(keyOrEmpty(st.key)) + ".json");
       om.writerWithDefaultPrettyPrinter().writeValue(f, st);
     } catch (Exception e) {
-      e.printStackTrace();
+      log.error("Failed to persist tournament '{}': {}", st.key, e.getMessage(), e);
     }
   }
 
@@ -65,11 +69,17 @@ public class TournamentStore {
         try {
           byte[] b = Files.readAllBytes(f.toPath());
           TournamentState st = om.readValue(b, TournamentState.class);
-          if (st != null && st.key != null) tournaments.put(st.key, st);
-        } catch (Exception ignore) {}
+          if (st != null && st.key != null) {
+            tournaments.put(st.key, st);
+          } else {
+            log.warn("Skipping corrupt tournament file (null state or key): {}", f.getName());
+          }
+        } catch (Exception e) {
+          log.error("Failed to load tournament file '{}': {}", f.getName(), e.getMessage(), e);
+        }
       }
     } catch (Exception e) {
-      e.printStackTrace();
+      log.error("Failed to scan data directory '{}': {}", dataDir.getPath(), e.getMessage(), e);
     }
   }
 
