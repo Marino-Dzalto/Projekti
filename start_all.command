@@ -26,7 +26,7 @@ NGROK_PID=$!
 
 # 3) Desktop app - kompajliraj samo ako je .java noviji od .class
 GSON_JAR="lib/gson-2.11.0.jar"
-if [ SwissTournamentApp.java -nt SwissTournamentApp.class ]; then
+if [ ! -f SwissTournamentApp.class ] || [ SwissTournamentApp.java -nt SwissTournamentApp.class ]; then
   echo "Kompajliram..."
   javac -cp "$GSON_JAR" SwissTournamentApp.java
 fi
