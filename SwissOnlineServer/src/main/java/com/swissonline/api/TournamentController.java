@@ -12,7 +12,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @RestController
 @RequestMapping("/api")
-@CrossOrigin(origins="*")
 public class TournamentController {
 
   private final TournamentStore store;
