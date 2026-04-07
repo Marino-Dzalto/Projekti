@@ -1,0 +1,32 @@
+React.js install
+npx create-react-app edu-bingo
+cd edu-bingo
+npm start
+
+Instalacija react-router-dom
+npm install react-router-dom
+
+
+Express.js install
+cd server
+npm install express cors body-parser
+
+
+KAKO POKRENUTI React
+
+(1) otvorite terminal
+(2) cd edu-bingo
+(3) npm start
+
+
+BITNE KOMANDE
+rm -rf node_modules        # Briše folder sa zavisnostima
+npm install                # Ponovo instalira sve zavisnosti
+
+
+Kriptografske funkcije:
+MacOS 
+export NODE_OPTIONS=--openssl-legacy-provider
+
+Windows
+set NODE_OPTIONS=--openssl-legacy-provider
